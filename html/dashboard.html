@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MWF Dashboard</title>
+  <link href="bootstrap-5.3.7-dist/bootstrap-5.3.7-dist/css/bootstrap.css" rel="stylesheet"/>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="public/css/style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">MWF Dashboard</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+        data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
+          <li class="nav-item"><a class="nav-link" href="stock.html">Stock</a></li>
+          <li class="nav-item"><a class="nav-link" href="customers.html">Customer</a></li>
+          <li class="nav-item"><a class="nav-link" href="users.html">User Manager</a></li>
+          <li class="nav-item"><a class="nav-link" href="reports.html">Reports</a></li>
+          <li class="nav-item"><a class="nav-link" href="delivery.html">Delivery</a></li>
+          <li class="nav-item"><a class="nav-link text-danger" href="logout.html">Log out</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- Dashboard Content -->
+  <div class="container my-4">
+    <h2 class="mb-4">Welcome, Manager</h2>
+
+    <!-- Dashboard Cards -->
+    <div class="row g-4">
+      <div class="col-md-3">
+        <div class="card text-center p-3 shadow-sm">
+          <div class="card-body">
+            <i class='bx bx-package bx-lg'></i>
+            <h5 class="card-title mt-2">Stock Items</h5>
+            <p class="card-text">View and update current stock.</p>
+            <a href="stock.html" class="btn btn-outline-primary btn-sm">Manage</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card text-center p-3 shadow-sm">
+          <div class="card-body">
+            <i class='bx bx-dollar-circle bx-lg'></i>
+            <h5 class="card-title mt-2">Sales</h5>
+            <p class="card-text">Record and view sales.</p>
+            <a href="sales.html" class="btn btn-outline-primary btn-sm">Open</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card text-center p-3 shadow-sm">
+          <div class="card-body">
+            <i class='bx bx-bar-chart bx-lg'></i>
+            <h5 class="card-title mt-2">Reports</h5>
+            <p class="card-text">Check performance reports.</p>
+            <a href="reports.html" class="btn btn-outline-primary btn-sm">View</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card text-center p-3 shadow-sm">
+          <div class="card-body">
+            <i class='bx bx-user bx-lg'></i>
+            <h5 class="card-title mt-2">Customers</h5>
+            <p class="card-text">Manage customer info.</p>
+            <a href="customers.html" class="btn btn-outline-primary btn-sm">Access</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row mt-5">
+      <div class="col-md-6">
+        <div class="card p-3 shadow-sm">
+          <h5 class="card-title">Monthly Sales (Bar Chart)</h5>
+          <canvas id="salesChart" height="200"></canvas>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card p-3 shadow-sm">
+          <h5 class="card-title">Top Products (Line Chart)</h5>
+          <canvas id="productsChart" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="bootstrap-5.3.7-dist/bootstrap-5.3.7-dist/js/bootstrap.bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Create empty charts first
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
+    const productsCtx = document.getElementById('productsChart').getContext('2d');
+
+    const salesChart = new Chart(salesCtx, {
+      type: 'bar',
+      data: { labels: [], datasets: [{ label: 'Sales ($)', data: [], backgroundColor: '#8B4513' }] },
+      options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+
+    const productsChart = new Chart(productsCtx, {
+      type: 'line',
+      data: { labels: [], datasets: [{ label: 'Units Sold', data: [], borderColor: '#A0522D', backgroundColor: 'rgba(160,82,45,0.2)', fill: true, tension: 0.3 }] },
+      options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+
+    // Function to fetch data dynamically (from data.json)
+    async function fetchChartData() {
+      try {
+        const response = await fetch("data.json"); // 🔹 Fetch from JSON file
+        const data = await response.json();
+
+        // Update Sales Chart
+        salesChart.data.labels = data.sales.months;
+        salesChart.data.datasets[0].data = data.sales.values;
+        salesChart.update();
+
+        // Update Products Chart
+        productsChart.data.labels = data.products.names;
+        productsChart.data.datasets[0].data = data.products.units;
+        productsChart.update();
+      } catch (error) {
+        console.error("Error loading chart data:", error);
+      }
+    }
+
+    // Load data initially and refresh every 10 seconds
+    fetchChartData();
+    setInterval(fetchChartData, 10000);
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,19 @@
+ /* body {
+      font-family: Arial, sans-serif;
+      background-image:url('/public/images/wood.jpg');
+    } */
+    .signup-container {
+      max-width: 500px;
+      margin: 80px auto;
+      padding: 50px;
+      background: burlywood;
+      border-radius: 40px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .btn-custom {
+      background-color: #8b5e3c;
+      color: white;
+      width: 100%;
+    }
+
+

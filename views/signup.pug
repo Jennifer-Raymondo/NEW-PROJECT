@@ -1,0 +1,32 @@
+doctype html
+head
+  meta(charset='UTF-8')
+  meta(name='viewport' content='width=device-width, initial-scale=1.0')
+  title Sign Up | MWF Furniture
+  link(href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet')
+  link(rel='stylesheet' href='/css/signup.css')
+  link(rel='stylesheet' href='/css/style.css')
+body#signup-page
+  form(method="POST" action="/signup" class="signup-container")
+    h2.text-center.mb-4(style='font-weight: bolder;') Sign Up
+    // Role Selection
+    .mb-3
+      label.form-label(for='role') Sign up as
+      select#role.form-select(name="role" required)
+        option(value='') -- Select Role --
+        option(value='manager') Manager
+        option(value='attendant') Attendant
+    // Username
+    .mb-3
+      label.form-label(for='username') Username
+      input#username.form-control(type='text' name="username" placeholder='Enter your username' required='')
+    // Password
+    .mb-3
+      label.form-label(for='password') Password
+      input#password.form-control(type='password' name="password" placeholder='Enter your password' required='')
+    // Signup Button
+    button.btn.btn-custom(type="submit") Sign Up
+    // Link to login
+    p.text-center.mt-3
+      | Already have an account?
+      a(href="/login") Login here

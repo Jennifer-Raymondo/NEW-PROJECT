@@ -1,0 +1,89 @@
+doctype html
+head
+  meta(charset='UTF-8')
+  title Add New Attendants - MWF
+  meta(name='viewport' content='width=device-width, initial-scale=1')
+  link(href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet')
+  link(rel='stylesheet' href='css/style.css')
+// Navbar
+nav.navbar.navbar-expand-lg.navbar-dark.bg-dark.py-2
+  .container-fluid
+    a.navbar-brand(href='/dashboard') MWF
+    button.navbar-toggler(type='button' data-bs-toggle='collapse' data-bs-target='#navbarNav')
+      span.navbar-toggler-icon
+    #navbarNav.collapse.navbar-collapse
+      ul.navbar-nav
+        li.nav-item
+          a.nav-link(href='/dashboard') Dashboard
+        li.nav-item
+          a.nav-link(href='/sales') Sales
+        li.nav-item
+          a.nav-link(href='/stock') Stock
+        //- li.nav-item
+        //-   a.nav-link(href='/customers') Customer
+        //- li.nav-item
+        //-   a.nav-link(href='/users') User Manager
+        //- li.nav-item
+        //-   a.nav-link(href='/reports') Reports
+        //- li.nav-item
+        //-   a.nav-link(href='/delivery') Delivery
+        li.nav-item
+          a.nav-link.text-danger(href='/logout') log out
+// Page Content
+.container.mt-4
+  h2.text-center.mb-4 User Management
+  // Add User Form
+  .card.mb-4.shadow-sm
+    .card-header.bg-burlywood.text-white Add New User
+    .card-body
+     form(action='/users' method='post')
+        .row.mb-3
+          .col-md-4.mb-2
+            input.form-control(type='text' placeholder='Full Name' required='' name='fullName')
+          .col-md-4.mb-2
+            input.form-control(type='email' placeholder='Email' required='' name='email')
+          .col-md-4.mb-2
+            select.form-select(required='' name='role')
+              option(value='') Select Role
+              option(value='salesAgent') Sales Agent
+              option(value='stockAttendant') Stock Attendant
+              option(value='manager') Manager
+        .row
+          .col-md-4.mb-2
+            input.form-control(type='text' placeholder='Username' required='' name='username')
+          .col-md-4.mb-2
+            input.form-control(type='password' placeholder='Password' required='' name='password')
+          .col-md-4.mb-2
+            button.btn.btn-brown.w-100(type='submit') Add User
+  // User Table
+  .card.shadow-sm
+    .card-header.bg-burlywood.text-white User List
+    .card-body.table-responsive
+      table.table.table-striped.table-hover
+        thead.table-dark
+          tr
+            th #
+            th Name
+            th Username
+            th Email
+            th Role
+            th Status
+        tbody
+          tr
+            td 1
+            td Jane Akena
+            td jane.mwf
+            td jane@mwf.com
+            td Sales Agent
+            td
+              span.badge.bg-success Active
+          tr
+            td 2
+            td John Kintu
+            td kintu.stock
+            td john@mwf.com
+            td Stock Attendant
+            td
+              span.badge.bg-danger Inactive
+// Bootstrap JS
+script(src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js')

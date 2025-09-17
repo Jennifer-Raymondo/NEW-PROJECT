@@ -1,0 +1,606 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins&display:wght@300,400,500,600,700,800,900&display=swap");
+
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "poppins", sans-serif;
+}
+
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background:url('../images/wood.jpg');
+    background-size:cover;
+    background-repeat: repeat;
+    background-size: contain;
+}
+.mb-4 {
+color: white;
+font-size: 40px;
+
+}
+.jen {
+    width: 420px;
+    background: burlywood;
+    color: black;
+    border-radius: 15px;
+    border: 2px solid rgba(255, 255, 255, .2);
+    box-shadow: 0 0 10px;
+    
+}
+
+.jen h1 {
+    font-size: 36px;
+    text-align: center;
+}
+
+.jen .input-box {
+    position: relative;
+    width: 100%;
+    height: 50px;
+
+    margin: 30px 0;
+
+}
+
+
+label{
+    margin-left: -200px;
+}
+label input{
+    margin-right: -200px;
+}
+
+.input-box input {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    border: 2px solid rgba(255, 255, 255, .2);
+    border-radius: 40px;
+    font-size: 16px;
+    color: black;
+    padding: 20px 45px 20px;
+
+
+}
+
+.input-box input::placeholder {
+    color: black;
+}
+
+.input-box i {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+}
+.jen .remember-forgot{
+    font-size: 14px;
+    
+    
+    }
+
+    .remember-forgot{
+        accent-color: burlywood;
+        margin-right: 3px;
+        color: azure;
+    }
+    .jen .btn {
+        width: 100%;
+        height: 45px;
+        background: burlywood;
+        border: none;
+        outline: none;
+        border-radius: 40px;
+        box-shadow: 0 0 1px;
+        cursor: pointer;
+        font-size: 16px;
+}
+
+.btn a{
+  text-decoration: none;
+  color: black;
+  font-weight: bold;
+}
+    
+.jen .register-link {
+    font-size: 14px;
+    text-align: center;
+    margin-top: 20px;
+    margin: 20px 0 15px;
+    color: azure;
+    
+}
+.register-link p a {
+    color: whitesmoke;
+    text-decoration: none;
+    font-weight: 600;
+    
+}
+
+.register-link p a:hover {
+text-decoration: underline;
+}
+
+
+ /* signup */
+/* #signup-page {
+  font-family: Arial, sans-serif;
+  background:url('../images/wood.jpg');
+}
+
+#signup-page {
+  max-width: 500px;
+  margin: 80px auto;
+  padding: 50px;
+  background: burlywood;
+  border-radius: 40px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+#signup-page .btn-custom {
+  background-color: #8b5e3c;
+  color: white;
+  width: 100%;
+}
+ */
+
+
+    /* login */
+    /* body {
+      font-family: Arial, sans-serif;
+      background:url('../images/wood.jpg');
+    } */
+    .login-container {
+      max-width: 500px;
+      margin: 80px auto;
+      padding: 50px;
+      background: burlywood;
+      border-radius: 40px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .btn-custom {
+      background-color: #8b5e3c;
+      color: white;
+      width: 100%;
+    }
+
+/* mwf project */
+
+/* dashbord */
+
+ /* body {
+      background-color: #f8f9fa;
+      
+    } */
+
+    .navbar {
+      background-color: #4a00e0;
+      
+      
+    }
+
+    .navbar-brand, .nav-link, .navbar-toggler-icon {
+      color: white !important;
+      
+       
+    }
+.container-fluid {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: burlywood;
+    padding: 0px;
+}
+   
+ .card {
+    background-color: burlywood;
+    
+}
+
+/* boxicons  */
+
+
+.card .bx-package {
+    color: black;
+}
+
+.card .bx-dollar-circle {
+    color: black;
+}
+
+.card .bx-bar-chart {
+    color: black;
+}
+
+.card .bx-user {
+    color: black;
+}
+
+
+.btn-outline-primary  {
+    color: azure;
+    border-color: black;
+}
+
+
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      transition: 0.3s ease;
+    }
+.card .btn-outline-primary {
+    background-color: whitesmoke;
+    color: black;
+}
+
+
+
+
+    .card:hover {
+      transform: translateY(-3px);
+      
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+    }
+
+    .card-body i {
+      font-size: 2rem;
+      color: #4a00e0;
+    }
+  
+
+
+
+
+
+
+
+
+/* ===== MWF Main Theme Colors ===== */
+
+/* sale page */
+/* body {
+  background-color: #fefaf5;
+  font-family: 'Segoe UI', sans-serif;
+  color: #3e2c1c;
+} */
+
+.sales-form-container {
+  background: burlywood;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.1);
+  border: 2px solid #8b5e3c;
+}
+
+.sales-form-container h2 {
+  color: #5b3b1d;
+  font-weight: bold;
+  border-bottom: 2px solid #8b5e3c;
+  padding-bottom: 10px;
+  margin-bottom: 25px;
+}
+
+/* Form Elements */
+.form-label {
+  font-weight: 60;
+  color: whitesmoke;
+  font-size: 15px;
+  margin-bottom: 8px;
+  
+  
+
+}
+
+.form-control,
+.form-select {
+  border: 2px solid #a97449;
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #5d4037;
+  box-shadow: 0 0 4px rgba(93, 64, 55, 0.3);
+}
+
+/* Submit Button */
+.btn-submit {
+  background-color: #5b3b1d;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 8px;
+  padding: 12px;
+  transition: background 0.3s ease;
+}
+
+.btn-submit:hover {
+  background-color: #3e2c1c;
+  color: #fff;
+}
+
+/* Optional: Card-like background */
+.container {
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+
+/* Custom Scrollbar (optional) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #8b5e3c;
+  border-radius: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #f5e1c2;
+}
+
+.container-fluid {
+  padding: 20pz;
+}
+
+/* ===== MWF Stock Page Styles ===== */
+
+
+
+
+
+/* body {
+  background-color: #fefaf5;
+  font-family: 'Segoe UI', sans-serif;
+  color: #3e2c1c;
+} */
+
+.stock-form-container {
+  background-color: burlywood;
+  padding: 30px;
+  border-radius: 15px;
+  max-width: 500px;
+  margin: auto;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+  border: 2px solid #8b5e3c;
+
+  font-weight: bold;
+  border-bottom: 2px solid #8b5e3c;
+  padding-bottom: 10px;
+  margin-bottom: 25px;
+  
+}
+
+.stock-form-container h2 {
+  color: #5b3b1d;
+  font-weight: bold;
+  border-bottom: 2px solid #8b5e3c;
+  padding-bottom: 10px;
+  margin-bottom: 25px;
+}
+
+.form-label {
+  font-weight: 600;
+  color: white;
+  background-color:burlywood;
+  border-radius: 30px;
+  padding: 10px;
+  
+  
+}
+
+.col-md-6 .form-label {
+  
+  padding: 0px;
+  margin: 5px;
+}
+
+
+.form-control,
+.form-select {
+  border: 2px solid #a97449;
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #5d4037;
+  box-shadow: 0 0 4px rgba(93, 64, 55, 0.3);
+}
+
+.btn-submit {
+  background-color: #5b3b1d;
+  color: white;
+  font-weight: bold;
+  border-radius: 8px;
+  padding: 12px 24px;
+  transition: background 0.3s ease;
+}
+
+.btn-submit:hover {
+  background-color: #3e2c1c;
+}
+
+.container stock-form-container mt-5 {
+  padding: 20px;
+}
+
+
+/* form */
+
+/* body {
+  background-color: #fdf7f0;
+  font-family: 'Segoe UI', sans-serif;
+  color: #4e342e;
+} */
+
+.report-container {
+  background-color: burlywood;
+  padding: 30px;
+  border-radius: 15px;
+  border: 2px solid #8b5e3c;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.08);
+}
+
+.report-container h2 {
+  color: #5b3b1d;
+  font-weight: bold;
+}
+
+.table {
+  background-color: white;
+  font-size: 15px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table th {
+  background-color: #5b3b1d;
+  color: white;
+}
+
+.table td {
+  color: #3e2c1c;
+}
+
+.btn-dark {
+  background-color: #5b3b1d;
+  border: none;
+}
+
+.btn-dark:hover {
+  background-color: #3e2c1c;
+}
+
+
+/* user manager */
+/* body {
+  background-color: #fdf6e3;
+  font-family: 'Segoe UI', sans-serif;
+} */
+
+/* Custom Burlywood Background */
+.bg-burlywood {
+  background-color: burlywood !important;
+}
+
+/* Custom Brown Button */
+.btn-brown {
+  background-color: wheat;
+  color: white;
+  transition: 0.3s ease;
+}
+
+.btn-brown:hover {
+  background-color: #5a2d0c;
+}
+
+/* Improve card title */
+.card-header {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+
+/* customer management */
+/* 
+body {
+  background-color: #fefaf0;
+  font-family: 'Segoe UI', sans-serif;
+} */
+
+/* Burlywood */
+.bg-burlywood {
+  background-color: burlywood !important;
+}
+
+/* Brown Button */
+.btn-brown {
+  background-color: brown;
+  color: white;
+  transition: 0.3s ease;
+}
+
+.btn-brown:hover {
+  background-color: #5a2d0c;
+}
+
+.card-header {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+
+
+
+
+/* delevery record */
+/* 
+body {
+  background-color: #fdf5e6; 
+  font-family: 'Segoe UI', sans-serif;
+} */
+
+.bg-brown {
+  background-color: #5C4033 !important; /* dark brown */
+}
+
+.text-brown {
+  color: #5C4033;
+}
+
+.btn-brown {
+  background-color: burlywood; /* burlywood */
+  color: white;
+  border: none;
+}
+
+.btn-brown:hover {
+  background-color: #caa06c;
+}
+.form-label {
+  margin: 5px;
+}
+
+
+/* logout page */
+
+.text-brown {
+  color: #5C4033; /* dark brown */
+}
+
+.btn-brown {
+  background-color: #deb887; /* burlywood */
+  color: white;
+  border: none;
+  
+}
+
+.btn-brown:hover {
+  background-color: #caa06c;
+}
+
+
+
+.card-img-top {
+   width: 564px;
+  height: 423px;
+  object-fit: cover; /* ensures image keeps shape */
+  margin: 10px;      /* adjust margin as you like */
+}
+
+

@@ -1,0 +1,10 @@
+{
+  "sales": {
+    "months": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+    "values": [1200, 1900, 3000, 2500, 3200, 4000]
+  },
+  "products": {
+    "names": ["Chair", "Table", "Bed", "Sofa", "Wardrobe"],
+    "units": [50, 75, 40, 60, 30]
+  }
+}

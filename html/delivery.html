@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delivery Management - MWF</title>
+  <link rel="stylesheet" href="bootstrap-5.3.7-dist/bootstrap-5.3.7-dist/css/bootstrap.css">
+  <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark py-2">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="dashboard.html">MWF</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
+          <li class="nav-item"><a class="nav-link" href="stock.html">Stock</a></li>
+           <li class="nav-item"><a class="nav-link" href="customers.html">Customer</a></li>
+          <li class="nav-item"><a class="nav-link" href="users.html">User Manager</a></li>
+          <li class="nav-item"><a class="nav-link" href="reports.html">Reports</a></li>
+          <li class="nav-item"><a class="nav-link" href="delivery.html">Delivery</a></li>
+<li class="nav-item"><a class="nav-link text-danger" href="logout.html">log out</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+ 
+  </nav>
+
+  <div class="container my-5">
+    <div class="card shadow p-4">
+      <h2 class="mb-4 text-center text-brown">Delivery Record Form</h2>
+
+      <form>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="customerName" class="form-label">Customer Name</label>
+            <input type="text" class="form-control" id="customerName" required>
+          </div>
+          <div class="col-md-6">
+            <label for="product" class="form-label">Product</label>
+            <input type="text" class="form-control" id="product" required>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label for="quantity" class="form-label">Quantity</label>
+            <input type="number" class="form-control" id="quantity" required>
+          </div>
+          <div class="col-md-4">
+            <label for="deliveryFee" class="form-label">Delivery Fee (5%)</label>
+            <input type="text" class="form-control" id="deliveryFee" placeholder="Auto-calculated or manual">
+          </div>
+          <div class="col-md-4">
+            <label for="deliveryDate" class="form-label">Delivery Date</label>
+            <input type="date" class="form-control" id="deliveryDate" required>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="address" class="form-label">Delivery Address</label>
+          <textarea class="form-control" id="address" rows="2" required></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label for="status" class="form-label">Delivery Status</label>
+          <select class="form-select" id="status">
+            <option value="Pending">Pending</option>
+            <option value="In Transit">In Transit</option>
+            <option value="Delivered">Delivered</option>
+          </select>
+        </div>
+
+        <div class="text-center">
+          <button type="submit" class="btn btn-brown px-5">Save Delivery</button>
+        </div>
+      </form>
+    </div>
+  </div>
+<script src="bootstrap-5.3.7-dist/bootstrap-5.3.7-dist/js/bootstrap.bundle.js"></script>
+</body>
+</html>
