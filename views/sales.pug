@@ -13,11 +13,15 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-dark.py-2
     #navbarNav.collapse.navbar-collapse
       ul.navbar-nav
         li.nav-item
-          a.nav-link(href='/dashboard') Dashboard
+          a.nav-link(href='dashboard') Dashboard
+        li.nav-item
+          a.nav-link(href='/sales') Sales
         li.nav-item
           a.nav-link(href='/saleslist') Saleslist
         li.nav-item
-          a.nav-link.text-danger(href='/logout') log out
+          a.nav-link(href='/stock') Stock
+        li.nav-item
+          a.nav-link(href='/stocklist') stocklist
 .container.mt-5
   .sales-form-container.mx-auto(style='max-width: 600px;')
     h2 Record a Sale
@@ -52,8 +56,13 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-dark.py-2
             option(value) Choose
             option(value='Yes') Yes
             option(value='No') No
+      //selling price
+      .row.mb-3
+        .col-md-6
+          label.form-label Selling Price (UGX)
+          input.form-control(type='number' required name='sellingPrice' placeholder='e.g. 250000')
       // Payment and Agent
-      .row.mb-4
+      .row.mb-3 
         .col-md-6
           label.form-label Payment Type
           select.form-select(name='paymentType' required='')

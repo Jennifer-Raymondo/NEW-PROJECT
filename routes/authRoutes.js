@@ -1,423 +1,232 @@
 const express = require('express');
 const router = express.Router();
-//const passport = require('passport');
+const passport = require('passport');
 
-
-//manager file models
-//const UserModel = require('../models/userModel');
+// Models
+const User = require('../models/userModel');
 const salesmodel = require('../models/salesModels');
 const stockModels = require('../models/stockModels');
-//const customerModels = require('../models/customerModels');
-//const deliveryModels = require('../models/deliveryModels');
-//const reportsModels = require('../models/reportsModels');
-const signupModels = require('../models/signupModels');
-//Attendant file models
-//const attendantStockModels = require('../models/attendantStockModels');
-//const attendantSalesModels = require('../models/attendantSalesModels');
-//const attendantDeliveryModels = require('../models/attendantDeliveryModels');
-//const attendantProfileModels = require('../models/attendantProfileModels');
 
+// Middleware
+const { ensureAuthenticated, ensureManager, ensureAttendant } = require('../middleware/auth');
 
-
- 
-
-//my project routes 
-//getting the landing page
-// Landing page (Pug render)
+// ----------------------
+// LANDING + AUTH
+// ----------------------
 router.get('/', (req, res) => {
-  res.render('index', { title: 'landing page' });
+  res.render('index', { title: 'Landing Page' });
 });
 
-
-
-// Signup page
-router.get('/signup', (req, res) => {
-  res.render('signup', { title: 'Sign Up' });
-});
-
-// Handle signup form
+// Signup form
+router.get('/signup', (req, res) => res.render('signup'));
 router.post('/signup', async (req, res) => {
   try {
-    const user = new signupModels(req.body);
-    await user.save();
-    console.log(" User signed up:", req.body);
-    res.redirect('/login'); // after signup, go to login
-  } catch (err) {
-    console.error(" Error signing up:", err);
+    const { username, password, role } = req.body;
+    const user = new User({ username, role });
+    await User.register(user, password); // passport-local-mongoose
     res.redirect('/login');
-  }
-});
-
-
-
-
-
-
-// Login page (served from views/login.pug)
-router.get('/login', (req, res) => {
-  res.render('login', { title: 'Login Page' });
-});
-
-// Handle login post form submission
-router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
- 
-  if (!username || !password) {
-    return res.send("Please fill all fields!");
-  }
-
-  try {
-    // Find user in DB
-    const user = await signupModels.findOne({ username, password });
-
-    if (!user) {
-      return res.send("Invalid username or password");
-    }
-
-    // Redirect based on stored role
-    if (user.role === "manager") {
-      return res.redirect("/dashboard");
-    } else if (user.role === "attendant") {
-      return res.redirect("/attendant-dashboard");
-    } else {
-      return res.redirect("/");
-    }
   } catch (err) {
-    console.error("Login error:", err);
-    return res.send("Something went wrong, try again.");
+    console.error("Signup error:", err);
+    res.send(" Error signing up user. Make sure username is unique.");
   }
 });
 
 
+// Login form
+router.get('/login', (req, res) => res.render('login'));
+
+router.post(
+  '/login',
+  passport.authenticate('local', { failureRedirect: '/login' }),
+  (req, res) => {
+    if (!req.user) return res.redirect('/login'); // sanity check
+
+    // ✅ Both roles redirect to /dashboard
+    return res.redirect('/dashboard');
+  }
+);
 
 
-
-
-
-
-// Dashboard page
-router.get('/dashboard', (req, res) => {
-  res.render('dashboard', { title: 'Dashboard' });
-});
-
-
-
-// Attendant Dashboard page
-router.get('/attendant-dashboard', (req, res) => {
-  res.render('attendant-dashboard', { title: 'Attendant Dashboard' });
-});
-
-
-
-
-
-// Manager Sales page
-// Display the sales form
-router.get('/sales', (req, res) => {
-  res.render('sales', { title: 'Record Sale' });
-});
-
-// Handle sale submission
-router.post('/sales', async (req, res) => {
+router.get('/dashboard', ensureAuthenticated, async (req, res) => {
   try {
-    // Log the form data to terminal
-    console.log('Sale submitted:', req.body);
+    // 🔹 Aggregate stock by category
+    const stockTotals = await stockModels.aggregate([
+      {
+        $group: {
+          _id: "$category", // finished products / raw materials
+          totalQuantity: { $sum: "$quantity" },
+          totalCost: { $sum: { $multiply: ["$quantity", "$costPrice"] } }
+        }
+      }
+    ]);
 
-    const sales = new salesmodel(req.body);
-    await sales.save();
+    // Split by category
+    const finishedProducts = stockTotals.find(item => item._id === "finished products") || { totalCost: 0, totalQuantity: 0 };
+    const rawMaterials = stockTotals.find(item => item._id === "raw material") || { totalCost: 0, totalQuantity: 0 };
 
-    console.log('Sale saved to DB successfully');
-    // Redirect to saleslist page
-    res.redirect('/saleslist');
+    // Grand total stock expense
+    const totalStockExpense = stockTotals.reduce((acc, item) => acc + item.totalCost, 0);
+
+    // 🔹 Aggregate sales total
+   const salesTotals = await salesmodel.aggregate([
+  {
+    $group: {
+      _id: null,
+      totalSales: { $sum: { $multiply: ["$quantity", "$sellingPrice"] } } // ✅ compute total revenue
+    }
+  }
+]);
+    const totalSales = salesTotals[0]?.totalSales || 0;
+
+    // Render dashboards based on role
+    if (req.user.role === "manager") {
+      return res.render("dashboard", {
+        title: "Manager Dashboard",
+        user: req.user,
+        totalStockExpense,
+        totalSales,
+        finishedProducts,
+        rawMaterials
+      });
+    } else if (req.user.role === "attendant") {
+      return res.render("attendant-dashboard", {
+        title: "Attendant Dashboard",
+        user: req.user
+      });
+    }
+
+    res.redirect("/login");
   } catch (error) {
-    console.error('Failed to save sale:', error);
-    res.status(500).send('Failed to save sale');
+    console.error("Dashboard aggregation error:", error.message);
+    res.status(500).send("Unable to load dashboard data");
   }
 });
 
 
+// Logout
+router.get('/logout', (req, res, next) => {
+  req.logout(function (err) {
+    if (err) return next(err);
+    // Render the logout confirmation page
+    res.render('logout', { title: 'Logout' });
+  });
+});
 
-// Display all sales records
-router.get('/saleslist', async (req, res) => {
+
+
+
+// SALES list: both roles can see
+router.get('/saleslist', ensureAuthenticated, async (req, res) => {
   try {
     const items = await salesmodel.find().sort({ $natural: -1 });
-    console.log('Sales list fetched:', items.length, 'records');
-
-    // Render the salesTable template with the items
-    res.render('salesTable', { items });
+    res.render('salesTable', {
+      items,
+      role: req.user.role // send role to Pug to hide buttons for attendants
+    });
   } catch (error) {
-    console.error('Unable to fetch sales list:', error);
-    res.status(500).send('Unable to get sales records');
+    res.status(500).send("Unable to get sales records");
   }
 });
 
+// Record a sale: allow both roles
+router.get('/sales', ensureAuthenticated, (req, res) => {
+  res.render('sales', { title: 'Record Sale', role: req.user.role });
+});
 
+router.post('/sales', ensureAuthenticated, async (req, res) => {
+  try {
+    const sale = new salesmodel(req.body);
+    await sale.save();
+    res.redirect('/saleslist');
+  } catch (error) {
+    res.status(500).send("Failed to save sale");
+  }
+});
 
-
-
-
-
-
-
-// Show edit form
-router.get('/sales/edit/:id', async (req, res) => {
+// Manager only: edit/delete
+router.get('/sales/edit/:id', ensureManager, async (req, res) => {
   try {
     const sale = await salesmodel.findById(req.params.id);
-    res.render('editSale', { sale }); // create `editSale.pug`
-  } catch (err) {
+    res.render('editSale', { sale });
+  } catch {
     res.status(404).send("Sale not found");
   }
 });
 
-// Handle edit form submission
-router.post('/sales/edit/:id', async (req, res) => {
+router.post('/sales/edit/:id', ensureManager, async (req, res) => {
   try {
     await salesmodel.findByIdAndUpdate(req.params.id, req.body);
     res.redirect('/saleslist');
-  } catch (err) {
+  } catch {
     res.status(500).send("Failed to update sale");
   }
 });
 
-// Handle delete
-router.post('/sales/delete/:id', async (req, res) => {
+router.post('/sales/delete/:id', ensureManager, async (req, res) => {
   try {
     await salesmodel.findByIdAndDelete(req.params.id);
     res.redirect('/saleslist');
-  } catch (err) {
+  } catch {
     res.status(500).send("Failed to delete sale");
   }
 });
 
+  
 
 
+ 
 
-
-
-
-
-
-// Manager Stock page
-router.get('/stock', (req, res) => {
-  res.render('stock', { title: 'Stock' });
+// ----------------------
+// MANAGER: STOCK
+// ----------------------
+router.get('/stock', ensureManager, (req, res) => {
+  res.render('stock');
 });
 
-
-router.post('/stock', async (req, res) => {
+router.post('/stock', ensureManager, async (req, res) => {
   try {
-    const stock = new stockModels(req.body)
-    console.log(req.body);
-    await stock.save()
-    res.redirect('/stocklist')
-  } catch (error) {
-    console.error(error)
-    res.redirect('/dashboard')
+    const stock = new stockModels(req.body);
+    await stock.save();
+    res.redirect('/stocklist');
+  } catch {
+    res.redirect('/dashboard');
   }
 });
 
-
-
-
-// Stock list page
-router.get('/stocklist', async (req, res) => {
+router.get('/stocklist', ensureManager, async (req, res) => {
   try {
     const stocks = await stockModels.find().sort({ $natural: -1 });
     res.render('stockTable', { stocks });
-  } catch (error) {
-    console.error("Error fetching stock:", error);
+  } catch {
     res.status(500).send("Unable to fetch stock records");
   }
 });
 
-
-
-// Load edit form
-router.get('/stock/edit/:id', async (req, res) => {
+router.get('/stock/edit/:id', ensureManager, async (req, res) => {
   try {
     const stock = await stockModels.findById(req.params.id);
-    if (!stock) {
-      return res.status(404).send("Stock not found");
-    }
-    res.render('editStock', { stock });  // <-- make sure your edit Pug file is named editStock.pug
-  } catch (error) {
-    console.error(error);
+    res.render('editStock', { stock });
+  } catch {
     res.status(500).send("Error loading stock item");
   }
 });
 
-// Handle edit form submit (update)
-router.post('/stock/edit/:id', async (req, res) => {
+router.post('/stock/edit/:id', ensureManager, async (req, res) => {
   try {
-    await stockModels.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    await stockModels.findByIdAndUpdate(req.params.id, req.body);
     res.redirect('/stocklist');
-  } catch (error) {
-    console.error(error);
+  } catch {
     res.status(500).send("Error updating stock");
   }
 });
 
-
-
-// Delete stock item
-router.post('/stock/delete/:id', async (req, res) => {
+router.post('/stock/delete/:id', ensureManager, async (req, res) => {
   try {
     await stockModels.findByIdAndDelete(req.params.id);
     res.redirect('/stocklist');
-  } catch (error) {
-    console.error(error);
+  } catch {
     res.status(500).send("Error deleting stock");
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//customer  page
-// router.get('/customers', (req, res) => {
-//   res.render('customers', { title: 'customers' });
-// });
-
-// router.post('/customers', (req, res) => {
-//   const customer = new customerModels(req.body)
-//   console.log(req.body);
-//   customer.save()
-//   res.redirect('/dashboard')
-// });
-
-
-
-//users  management 
-// router.get('/users', (req, res) => {
-//   res.render('users', { title: 'users' });
-// });
-
-// router.post('/users', (req, res) => {
-//   const user = new UserModel(req.body)
-//   console.log(req.body);
-//   user.save()
-//   res.redirect('/dashboard')
-// });
-
-
-
-// reports  page
-// router.get('/reports', (req, res) => {
-//   res.render('reports', { title: 'reports' });
-// });
-
-// router.post('/reports', (req, res) => {
-//   const reports = reportsModels(req.body)
-//   console.log(req.body);
-//   reports.save()
-//   res.redirect('/dashboard')
-// });
-
-
-
-
-// delivery page
-// router.get('/delivery', (req, res) => {
-//   res.render('delivery', { title: 'delivery' });
-// });
-
-// router.post('/delivery', (req, res) => {
-//   const delivery = new deliveryModels(req.body)
-//   console.log(req.body);
-//   delivery.save()
-//   res.redirect('/dashboard')
-// });
-
-
-
-//logout  page
-router.get('/logout', (req, res) => {
-  res.render('logout', { title: 'logout' });
-});
-
-
-
-//Attendant file pages starts from here
-// attendant-stock page
-// router.get('/attendant-stock', (req, res) => {
-// res.render('attendant-stock', {title: 'attendant-stock'});
-// });
-
-
-// router.post('/attendant-stock', (req, res) => {
-//   const attendantStock = new attendantStockModels(req.body)
-//   console.log(req.body);
-//   attendantStock.save()
-//   res.redirect('/attendant-dashboard')
-// });
-
-
-
-//attendant-sales page
-// router.get('/attendant-sales', (req, res) =>{
-//   res.render('attendant-sales', {title: 'attendant-sales'});
-// });
-
-// router.post('/attendant-sales', (req, res) => {
-//   const attendantSales = new attendantSalesModels(req.body)
-//   console.log(req.body);
-//   attendantSales.save()
-//   res.redirect('/attendant-dashboard')
-// });
-
-
-
-
-
-
-//attendant-delivery pages
-// router.get('/attendant-delivery', (req, res) =>{
-//    res.render('attendant-delivery', {title: 'attendant-delivery'});
-// });
-
-
-// router.post('/attendant-delivery', (req, res) => {
-//   const attendantDelivery = new attendantDeliveryModels(req.body)
-//   console.log(req.body);
-//   attendantDelivery.save()
-//   res.redirect('/attendant-dashboard')
-// });
-
-
-
-//attendant-profile page
-// router.get('/attendant-profile', (req, res)=>{
-//       res.render('attendant-profile', {title: 'attendant-profile'});
-//    });
-
-
-// router.post('/attendant-profile', (req, res) => {
-//   const attendantProfile = new attendantProfileModels(req.body)
-//   console.log(req.body);
-//   attendantProfile.save()
-//   res.redirect('/attendant-dashboard')
-// });
-
-
-
-
 
 module.exports = router;

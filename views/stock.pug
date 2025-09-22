@@ -20,16 +20,18 @@ html
             li.nav-item
               a.nav-link(href='/sales') Sales
             li.nav-item
+              a.nav-link(href='/saleslist') Saleslist
+            li.nav-item
               a.nav-link(href='/stock') Stock
-            //- li.nav-item
-            //-   a.nav-link(href='/customers') Customer
+            li.nav-item
+              a.nav-link(href='/stocklist') stocklist
             //- li.nav-item
             //-   a.nav-link(href='/users') User Manager
             //- li.nav-item
             //-   a.nav-link(href='/reports') Reports
             //- li.nav-item
             //-   a.nav-link(href='/delivery') Delivery
-            //- li.nav-item
+            li.nav-item
               a.nav-link.text-danger(href='/logout') log out
 
     .container.mt-5
@@ -42,30 +44,39 @@ html
               .row.mb-3
                 .col-md-6
                   label.form-label Product Name
-                  input.form-control(type='text' required name='productName' placeholder='e.g. Sofa Set')
+                  select.form-select(required name='productName')
+                    option(disabled selected) Choose...
+                    option(value='timber') timber
+                    option(value='poles') poles
+                    option(value='Hard-wood') Hard-wood 
+                    option(value='Soft-wood') Soft-wood
+                    option(value='Bed') Bed
+                    option(value='Sofa') Sofa
+                    option(value='Dining Table') Dining Table 
+                    option(value='Cupboards') Cupboards
+                    option(value='Drawers') Drawers
+                .col-md-6
+                  label.form-label category
+                  select.form-select(required name='category')
+                    option(disabled selected) Choose...
+                    option(value='raw material') raw material
+                    option(value='finished products') finished products
                 .col-md-6
                   label.form-label Product Type
                   select.form-select(required name='productType')
                     option(disabled selected) Choose...
-                    option Wood
-                    option Furniture
-
-              .row.mb-3
+                    option(value=' Wood') Wood
+                    option(value='Furniture') Furniture
                 .col-md-6
                   label.form-label Supplier Name
                   input.form-control(type='text' required name='supplierName' placeholder='e.g. Nile Timbers Ltd.')
-                .col-md-6
-                  label.form-label Quantity
-                  input.form-control(type='number' required name='quantity')
-
               .row.mb-3
                 .col-md-6
                   label.form-label Cost Price (UGX)
                   input.form-control(type='number' required name='costPrice')
                 .col-md-6
-                  label.form-label Selling Price (UGX)
-                  input.form-control(type='number' required name='sellingPrice')
-
+                  label.form-label Quantity
+                  input.form-control(type='number' required name='quantity')
               .row.mb-3
                 .col-md-6
                   label.form-label Date Received

@@ -26,10 +26,11 @@ const stockSchema = new mongoose.Schema({
     required:true
   },
 
- sellingPrice: {
-    type:Number,
-    required:true
-  },
+ category: {
+  type: String,
+  required: true,
+  enum: ['raw material', 'finished products'] 
+},
 
  dateReceived: {
     type:Date,

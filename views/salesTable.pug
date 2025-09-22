@@ -7,8 +7,28 @@ html
     link(href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet')
     link(rel='stylesheet' href='/css/style.css')
   body
+    nav.navbar.navbar-expand-lg.navbar-dark.bg-dark.py-2
+      .container-fluid
+        a.navbar-brand(href='/dashboard') MWF
+        button.navbar-toggler(type='button' data-bs-toggle='collapse' data-bs-target='#navbarNav')
+          span.navbar-toggler-icon
+        #navbarNav.collapse.navbar-collapse
+          ul.navbar-nav
+            li.nav-item
+              a.nav-link(href='dashboard') Dashboard
+            li.nav-item
+              a.nav-link(href='/sales') Sales
+            li.nav-item
+              a.nav-link(href='/saleslist') Saleslist
+            li.nav-item
+              a.nav-link(href='/stock') Stock
+            li.nav-item
+              a.nav-link(href='/stocklist') stocklist
     .container.mt-5
       h2.text-center.mb-4 Sales Records
+      .d-flex.justify-content-end.mt-3
+        a.btn.btn-success(href='/sales') + Add New Sale
+      br
       .table-responsive
         table.table.table-striped.table-bordered.table-hover
           thead.table-dark
@@ -20,8 +40,10 @@ html
               th Date
               th Sales Agent
               th Transport
+              th Selling Price
               th Payment Type
-              th Action
+              if role === 'manager'
+                th Action
           tbody
             if items && items.length
               each item in items
@@ -33,14 +55,14 @@ html
                   td #{item.Date ? (new Date(item.Date)).toLocaleDateString() : ''}
                   td #{item.salesAgent}
                   td #{item.transport}
+                  td #{item.sellingPrice}
                   td #{item.paymentType}
-                  td.d-flex.gap-2
-                    a.btn.btn-warning.btn-sm(href=`/sales/edit/${item._id}`) Edit
-                    form(action=`/sales/delete/${item._id}` method="post" onsubmit="return confirm('Are you sure you want to delete this sale?');")
-                      button.btn.btn-danger.btn-sm(type="submit") Delete
+                  if role === 'manager'
+                    td.d-flex.gap-2
+                      a.btn.btn-warning.btn-sm(href=`/sales/edit/${item._id}`) Edit
+                      form(action=`/sales/delete/${item._id}` method="post" onsubmit="return confirm('Are you sure you want to delete this sale?');")
+                        button.btn.btn-danger.btn-sm(type="submit") Delete
             else
               tr
-                td(colspan='9').text-center.text-muted No sales records found.
-      .d-flex.justify-content-end.mt-3
-        a.btn.btn-success(href='/sales') + Add New Sale
+                td(colspan= role === 'manager' ? '9' : '8').text-center.text-muted No sales records found.
     script(src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js')

@@ -41,6 +41,11 @@ html
                 option(value='') Choose
                 option(value='Yes' selected=sale.transport=='Yes') Yes
                 option(value='No' selected=sale.transport=='No') No
+         //selling price
+         .row.mb-3
+           .col-md-6
+            label.form-label Selling Price (UGX)
+            input.form-control(type='number' required name='sellingPrice' placeholder='e.g. 250000')
           // Payment and Agent
           .row.mb-4
             .col-md-6

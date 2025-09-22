@@ -20,6 +20,10 @@ const salesSchema = new mongoose.Schema({
     required:true
   },
 
+  sellingPrice: { 
+    type: Number, 
+    required: true
+   },
 
   Date: {
     type:Date,
