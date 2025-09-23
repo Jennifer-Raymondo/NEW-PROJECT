@@ -229,4 +229,120 @@ router.post('/stock/delete/:id', ensureManager, async (req, res) => {
   }
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ----------------------
+// MANAGER: FINISHED PRODUCTS
+// ----------------------
+router.get('/finishedProducts', ensureAuthenticated, ensureManager, async (req, res) => {
+  try {
+    const finishedItems = await stockModels.find({ category: 'finished products' });
+
+const totalQuantity = finishedItems.reduce((sum, item) => sum + item.quantity, 0);
+const totalValue = finishedItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+const categories = [...new Set(finishedItems.map(i => i.productType))].length;
+
+res.render('finishedProducts', {
+  finishedProducts: {
+    totalQuantity,
+    totalValue,
+    categories,
+    items: finishedItems
+  }
+});
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error loading Finished Products page");
+  }
+});
+
+// ----------------------
+// MANAGER: RAW MATERIALS
+// ----------------------
+router.get('/rawMaterials', ensureAuthenticated, ensureManager, async (req, res) => {
+  try {
+    const rawItems = await stockModels.find({ category: 'raw material' });
+
+    const totalQuantity = rawItems.reduce((sum, item) => sum + item.quantity, 0);
+    const totalExpense = rawItems.reduce((sum, item) => sum + (item.quantity * item.costPrice), 0);
+    const suppliers = [...new Set(rawItems.map(i => i.supplier))].length;
+
+    // Example dummy trends
+    const trends = [
+      { month: 'Jan', usage: 50 },
+      { month: 'Feb', usage: 70 },
+      { month: 'Mar', usage: 60 },
+      { month: 'Apr', usage: 80 },
+      { month: 'May', usage: 40 }
+    ];
+
+    res.render('rawMaterials', {
+      rawMaterials: {
+        totalQuantity,
+        totalExpense,
+        suppliers,
+        items: rawItems,
+        trends
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error loading Raw Materials page");
+  }
+});
+
+
+
+
+
+
+
+// Attendant: generate receipt
+router.get('/receiptSales/:id', ensureAuthenticated, ensureAttendant, async (req, res) => {
+  try {
+    const sale = await salesmodel.findById(req.params.id);
+    if (!sale) return res.status(404).send("Sale not found");
+
+    res.render('receiptSales', { sale });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error generating receipt");
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 module.exports = router;

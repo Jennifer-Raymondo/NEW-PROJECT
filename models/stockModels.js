@@ -26,6 +26,12 @@ const stockSchema = new mongoose.Schema({
     required:true
   },
 
+unitPrice: { 
+  type: Number, 
+  required: true
+ }, 
+
+
  category: {
   type: String,
   required: true,
