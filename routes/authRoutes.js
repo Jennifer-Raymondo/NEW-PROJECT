@@ -1,11 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
+const Employee = require('../models/employeeModel')
+
+
 
 // Models
 const User = require('../models/userModel');
 const salesmodel = require('../models/salesModels');
 const stockModels = require('../models/stockModels');
+
 
 // Middleware
 const { ensureAuthenticated, ensureManager, ensureAttendant } = require('../middleware/auth');
@@ -41,14 +45,24 @@ router.post(
   (req, res) => {
     if (!req.user) return res.redirect('/login'); // sanity check
 
+
+     // ✅ Redirect attendants straight to saleslist
+    if (req.user.role === 'attendant') return res.redirect('/saleslist');
+
+
     // ✅ Both roles redirect to /dashboard
     return res.redirect('/dashboard');
   }
 );
 
-
+//dashborad
 router.get('/dashboard', ensureAuthenticated, async (req, res) => {
   try {
+    // 🚫 Attendants should never see the dashboard
+    if (req.user.role === 'attendant') {
+      return res.redirect('/saleslist');
+    }
+    
     // 🔹 Aggregate stock by category
     const stockTotals = await stockModels.aggregate([
       {
@@ -86,7 +100,7 @@ router.get('/dashboard', ensureAuthenticated, async (req, res) => {
         totalStockExpense,
         totalSales,
         finishedProducts,
-        rawMaterials
+        rawMaterials,
       });
     } else if (req.user.role === "attendant") {
       return res.render("attendant-dashboard", {
@@ -241,14 +255,6 @@ router.post('/stock/delete/:id', ensureManager, async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
 // ----------------------
 // MANAGER: FINISHED PRODUCTS
 // ----------------------
@@ -283,7 +289,11 @@ router.get('/rawMaterials', ensureAuthenticated, ensureManager, async (req, res)
 
     const totalQuantity = rawItems.reduce((sum, item) => sum + item.quantity, 0);
     const totalExpense = rawItems.reduce((sum, item) => sum + (item.quantity * item.costPrice), 0);
-    const suppliers = [...new Set(rawItems.map(i => i.supplier))].length;
+
+
+    // ✅ count suppliers here
+    const suppliers = await stockModels.distinct("supplierName", { category: "raw material" });
+    const totalSuppliers = suppliers.length;
 
     // Example dummy trends
     const trends = [
@@ -298,7 +308,7 @@ router.get('/rawMaterials', ensureAuthenticated, ensureManager, async (req, res)
       rawMaterials: {
         totalQuantity,
         totalExpense,
-        suppliers,
+        suppliers: totalSuppliers,
         items: rawItems,
         trends
       }
@@ -333,8 +343,149 @@ router.get('/receiptSales/:id', ensureAuthenticated, ensureAttendant, async (req
 
 
 
+// reports
+router.get('/reports', ensureAuthenticated, ensureManager, async (req, res) => {
+  try {
+    // 🔹 Aggregate stock by category
+    const stockTotals = await stockModels.aggregate([
+      {
+        $group: {
+          _id: "$category",
+          totalQuantity: { $sum: "$quantity" },
+          totalCost: { $sum: { $multiply: ["$quantity", "$costPrice"] } }
+        }
+      }
+    ]);
+
+    // Split categories
+    const finishedProducts = stockTotals.find(item => item._id === "finished products") || { totalCost: 0, totalQuantity: 0 };
+    const rawMaterials = stockTotals.find(item => item._id === "raw material") || { totalCost: 0, totalQuantity: 0 };
+
+    // Grand total stock expense
+    const totalStockExpense = stockTotals.reduce((acc, item) => acc + item.totalCost, 0);
+
+    // 🔹 Aggregate sales total
+    const salesTotals = await salesmodel.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalSales: { $sum: { $multiply: ["$quantity", "$sellingPrice"] } }
+        }
+      }
+    ]);
+    const totalSales = salesTotals[0]?.totalSales || 0;
+
+    // ✅ Now render reports page with the variables defined
+    res.render("reports", {
+      totalSales,
+      totalStockExpense,
+      finishedProducts,
+      rawMaterials
+    });
+
+  } catch (err) {
+    console.error("Reports error:", err.message);
+    res.status(500).send("Unable to load reports");
+  }
+});
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ----------------------
+// MANAGER: EMPLOYEES
+// ---------------------
+
+// GET: Show employee list + registration form
+router.get('/employee', ensureAuthenticated, ensureManager, async (req, res) => {
+  try {
+    const employees = await Employee.find(); // fetch all employees
+    res.render('employee', { employees });   // pass to pug
+  } catch (err) {
+    console.error("Error fetching employees:", err);
+    res.status(500).send("Error loading employee list");
+  }
+});
+
+
+// ✅ GET: Show signup form
+// router.get('/signup', ensureAuthenticated, ensureManager, (req, res) => {
+//   res.render('signup'); // <-- this matches your signup.pug file
+// });
+
+
+
+// POST: Register new employee
+router.post('/employee', ensureAuthenticated, ensureManager, async (req, res) => {
+  try {
+    const { fullname, email, phone, department, username, password, role } = req.body;
+
+    // create new Employee instance
+    const employee = new Employee({ fullname, email, phone, department, username, role });
+
+    // register with passport-local-mongoose to hash password
+    await Employee.register(employee, password);
+
+    // redirect back to the same page to see updated list
+    res.redirect('/employee');
+  } catch (err) {
+    console.error("Employee registration error:", err);
+    res.status(500).send("Error registering employee");
+  }
+});
+
+// Optional: Edit, Update, Delete routes
+
+router.get('/edit-employee/:id', ensureAuthenticated, ensureManager, async (req, res) => {
+  try {
+    const employee = await Employee.findById(req.params.id);
+    if (!employee) return res.status(404).send("Employee not found");
+
+    const employees = await Employee.find(); // ✅ fetch all employees for the table
+    res.render('employee', { employees, editing: employee });
+  } catch (err) {
+    console.error("Error loading employee for edit:", err);
+    res.status(500).send("Error loading edit form");
+  }
+});
+
+
+router.post('/delete-employee/:id', ensureAuthenticated, ensureManager, async (req, res) => {
+  try {
+    await Employee.findByIdAndDelete(req.params.id);
+    res.redirect('/employee');
+  } catch (err) {
+    console.error("Error deleting employee:", err);
+    res.status(500).send("Error deleting employee");
+  }
+});
+
+
+
+
+// POST: update employee
+router.post('/edit-employee/:id', ensureAuthenticated, ensureManager, async (req, res) => {
+  try {
+    await Employee.findByIdAndUpdate(req.params.id, req.body);
+    res.redirect('/employee');
+  } catch (err) {
+    console.error("Error updating employee:", err);
+    res.status(500).send("Error updating employee");
+  }
+});
 
 
 

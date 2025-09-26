@@ -1,0 +1,56 @@
+doctype html
+html
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    title Employee List - MWF
+    link(href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet')
+    link(rel='stylesheet' href='/css/style.css')
+  body
+    nav.navbar.navbar-expand-lg.navbar-dark.bg-dark.py-2
+      .container-fluid
+        a.navbar-brand(href='/dashboard') MWF
+        button.navbar-toggler(type='button' data-bs-toggle='collapse' data-bs-target='#navbarNav')
+          span.navbar-toggler-icon
+        #navbarNav.collapse.navbar-collapse
+          ul.navbar-nav
+            li.nav-item
+              a.nav-link(href='/dashboard') Dashboard
+            li.nav-item
+              a.nav-link.active(href='/employee') Employees
+            li.nav-item
+              a.nav-link(href='/sales') Sales
+            li.nav-item
+              a.nav-link(href='/stock') Stock
+
+    .container.mt-5
+      .d-flex.justify-content-between.align-items-center.mb-3
+        h2 Employee List
+        a.btn.btn-success(href='/signup') + Add Employee
+
+      if employees.length
+        table.table.table-striped.table-bordered
+          thead.table-dark
+            tr
+              th Name
+              th Email
+              th Phone
+              th Department
+              th Role
+              th.text-center Actions
+          tbody
+            each employee in employees
+              tr
+                td= employee.fullname
+                td= employee.email
+                td= employee.phone
+                td= employee.department
+                td= employee.role
+                td.text-center
+                  a.btn.btn-sm.btn-primary.me-2(href=`/edit-employee/${employee._id}`) Edit
+                  form(action=`/delete-employee/${employee._id}` method='post' style='display:inline;')
+                    button.btn.btn-sm.btn-danger(type='submit' onclick="return confirm('Are you sure you want to delete this employee?');") Delete
+      else
+        .alert.alert-warning.mt-3 No employees registered yet.
+
+    script(src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js')

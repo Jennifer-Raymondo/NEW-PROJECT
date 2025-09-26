@@ -6,7 +6,7 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 require('dotenv').config();
 
-const User = require('./models/userModel');
+const Employee = require('./models/employeeModel')
 const authRoutes = require('./routes/authRoutes');
 
 const app = express();
@@ -37,12 +37,30 @@ app.use(session({
 // Passport setup
 app.use(passport.initialize());
 app.use(passport.session());
-passport.use(User.createStrategy());
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+passport.use(Employee.createStrategy()); 
+passport.serializeUser(Employee.serializeUser());
+passport.deserializeUser(Employee.deserializeUser());
 
 // Routes
 app.use('/', authRoutes);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Start server
 app.listen(port, () => console.log(`Server running on port ${port}`));

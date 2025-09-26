@@ -4,28 +4,64 @@ html
     meta(charset="UTF-8")
     title Sale Receipt - MWF
     link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet")
-  body
+    link(rel='stylesheet' href='/css/style.css')
+    style.
+      .receipt {
+        max-width: 700px;
+        margin: auto;
+        background: whitesmoke;
+        padding: 30px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+      .receipt-header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .receipt-footer {
+        margin-top: 30px;
+        text-align: center;
+        font-size: 0.9rem;
+        color: #555;
+      }
+  body.bg-light
     .container.mt-5
-      h2.text-center MWF Sales Receipt
-      hr
-      p Customer: #{sale.customerName}
-      p Sales Agent: #{sale.salesAgent}
-      p Transport: #{sale.transport}
-      p Date: #{sale.Date ? sale.Date.toLocaleDateString() : ''}
-      hr
-      table.table.table-bordered
-        thead
-          tr
-            th Product
-            th Quantity
-            th Unit Price
-            th Total
-        tbody
-          tr
-            td #{sale.productName}
-            td #{sale.quantity}
-            td #{sale.sellingPrice} Shs
-            td #{sale.quantity * sale.sellingPrice} Shs
-      hr
-      h5.text-end Total: #{sale.quantity * sale.sellingPrice} Shs
-      p.text-center Thank you for your purchase!
+      .receipt.shadow
+        .receipt-header
+          h2.text-uppercase MWF Sales Receipt
+          small.text-muted= new Date().toLocaleString()
+        hr
+        p
+          b Customer: 
+          | #{sale.customerName}
+        p
+          b Sales Agent: 
+          | #{sale.salesAgent}
+        p
+          b Transport: 
+          | #{sale.transport}
+        p
+          b Date: 
+          | #{sale.Date ? sale.Date.toLocaleDateString() : ''}
+        hr
+        table.table.table-bordered.mt-3
+          thead.table-light
+            tr
+              th Product
+              th Quantity
+              th Unit Price
+              th Total
+          tbody
+            tr
+              td #{sale.productName}
+              td #{sale.quantity}
+              td #{sale.sellingPrice} Shs
+              td #{sale.quantity * sale.sellingPrice} Shs
+        h5.text-end.mt-3
+          b Total: 
+          | #{sale.quantity * sale.sellingPrice} Shs
+        .receipt-footer
+          p Thank you for your purchase!  
+          p.text-muted For inquiries, contact MWF support.
+        .text-end.mt-3
+          button.btn.btn-primary(type="button" onclick="window.print()") Print Receipt
