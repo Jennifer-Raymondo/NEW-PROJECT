@@ -15,18 +15,22 @@ html
         #navbarNav.collapse.navbar-collapse
           ul.navbar-nav
             if role === 'manager'
-            li.nav-item
-              a.nav-link(href='dashboard') Dashboard
+              li.nav-item
+                a.nav-link(href='/dashboard') Dashboard
+              //- li.nav-item
+              //-   a.nav-link(href='/stock') Stock
+              //- li.nav-item
+              //-   a.nav-link(href='/stocklist') Stocklist
             li.nav-item
               a.nav-link(href='/sales') Sales
             li.nav-item
               a.nav-link(href='/saleslist') Saleslist
             li.nav-item
-              a.nav-link(href='/stock') Stock
+              a.nav-link(href='/salesRecords') SalesRecords
             li.nav-item
-              a.nav-link(href='/stocklist') stocklist
+              a.nav-link.text-danger(href='/logout') Logout
     .container.mt-5
-      h2.text-center.mb-4 Sales Records
+      h2.text-center.mb-4 Sales List
       .d-flex.justify-content-end.mt-3
         a.btn.btn-success(href='/sales') + Add New Sale
       br
@@ -43,7 +47,8 @@ html
               th Transport
               th Selling Price
               th Payment Type
-              th Receipt
+              if role === 'attendant'
+                th Receipt
               if role === 'manager'
                 th Action
           tbody
@@ -59,15 +64,18 @@ html
                   td #{item.transport}
                   td #{item.sellingPrice}
                   td #{item.paymentType}
+
                   if role === 'manager'
                     td.d-flex.gap-2
                       a.btn.btn-warning.btn-sm(href=`/sales/edit/${item._id}`) Edit
                       form(action=`/sales/delete/${item._id}` method="post" onsubmit="return confirm('Are you sure you want to delete this sale?');")
                         button.btn.btn-danger.btn-sm(type="submit") Delete
+
                   else if role === 'attendant'
                     td
                       a.btn.btn-info.btn-sm(href=`/receiptSales/${item._id}` target="_blank") Receipt     
             else
               tr
                 td(colspan= role === 'manager' ? '10' : '9').text-center.text-muted No sales records found.
+
     script(src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js')

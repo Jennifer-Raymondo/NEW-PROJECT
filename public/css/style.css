@@ -6,7 +6,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: "poppins", sans-serif;
+    font-family:Georgia, 'Times New Roman', Times, serif;
 }
 
 
@@ -163,7 +163,7 @@ text-decoration: underline;
     .login-container {
       max-width: 500px;
       margin: 80px auto;
-      padding: 50px;
+      padding: 100px;
       background: burlywood;
       border-radius: 40px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);

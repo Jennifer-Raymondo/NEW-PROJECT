@@ -16,16 +16,21 @@ html
         #navbarNav.collapse.navbar-collapse
           ul.navbar-nav
             li.nav-item
-              a.nav-link(href='dashboard') Dashboard
-            li.nav-item
-              a.nav-link(href='/sales') Sales
-            li.nav-item
-              a.nav-link(href='/saleslist') Saleslist
+              a.nav-link(href='/dashboard') Dashboard
+            //- li.nav-item
+            //-   a.nav-link(href='/sales') Sales
+            //- li.nav-item
+            //-   a.nav-link(href='/saleslist') Saleslist
+            //- li.nav-item
+            //-   a.nav-link(href='/salesRecords') SalesRecords
             li.nav-item
               a.nav-link(href='/stock') Stock
             li.nav-item
-              a.nav-link(href='/stocklist') stocklist
-    
+              a.nav-link(href='/stocklist') Stocklist
+            li.nav-item
+              a.nav-link(href='/finishedProducts') products
+            li.nav-item
+              a.nav-link.text-danger(href='/logout') Log out
     .container.mt-5
       h2.text-center.mb-4 Stock Records
       .d-flex.justify-content-end.mt-3
@@ -37,11 +42,9 @@ html
             tr
               th Product Name
               th Product Type
-              th category
               th Supplier Name
               th Quantity
               th Cost Price (UGX)
-              th Unit price (UGX)
               th Date Received
               th Quality
               th Action
@@ -51,11 +54,9 @@ html
                 tr
                   td #{stock.productName}
                   td #{stock.productType}
-                  td #{stock.category}
                   td #{stock.supplierName}
                   td #{stock.quantity}
                   td #{stock.costPrice}
-                  td #{stock.unitPrice}
                   td #{stock.dateReceived ? (new Date(stock.dateReceived)).toLocaleDateString() : ''}
                   td #{stock.quality}
                   td.d-flex.gap-2

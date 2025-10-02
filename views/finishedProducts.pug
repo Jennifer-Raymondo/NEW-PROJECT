@@ -8,7 +8,9 @@ html
     link(href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet")
     link(rel='stylesheet' href='/css/style.css')
     style.
-      .summary-card p { font-size: 0.9rem; font-weight: 600; 
+      .summary-card p { 
+        font-size: 0.9rem; 
+        font-weight: 600; 
         background-color: burlywood;
         color: #4e342e;
         border-radius: 0.75rem;
@@ -27,17 +29,25 @@ html
         #navbarNav.collapse.navbar-collapse.justify-content-end
           ul.navbar-nav
             li.nav-item
-              a.nav-link(href="/dashboard") Dashboard
+              a.nav-link(href='/dashboard') Dashboard
+            //- li.nav-item
+            //-   a.nav-link(href='/sales') Sales
+            //- li.nav-item
+            //-   a.nav-link(href='/saleslist') Saleslist
+            //- li.nav-item
+            //-   a.nav-link(href='/salesRecords') SalesRecords
             li.nav-item
-              a.nav-link(href="/saleslist") Sales
+              a.nav-link(href='/stock') Stock
             li.nav-item
-              a.nav-link(href="/stocklist") Stock
+              a.nav-link(href='/stocklist') Stocklist
             li.nav-item
-              a.nav-link.text-danger(href="/logout") Log out
+              a.nav-link(href='/finishedProducts') products
+            li.nav-item
+              a.nav-link.text-danger(href='/logout') Log out
 
     // Content
     .container.my-5
-      h2.mb-4 Finished Products Overview
+      h2.mb-4  Available Products Overview
 
       // Overview Cards
       .row.g-3.mb-4
@@ -45,10 +55,6 @@ html
           .card.shadow-sm.text-center.summary-card.p-3
             h5 Total Products
             p #{finishedProducts.totalQuantity} items
-        .col-md-4
-          .card.shadow-sm.text-center.summary-card.p-3
-            h5 Categories
-            p #{finishedProducts.categories} types
         .col-md-4
           .card.shadow-sm.text-center.summary-card.p-3
             h5 Stock Value
@@ -61,17 +67,24 @@ html
           table.table.table-striped.table-hover
             thead.table-dark
               tr
-                th ProductName
+                th Date Registered
+                th Product Name
                 th Quantity
-                th Unit Price
-                th Total Value
+                th Cost Price
+                th Total Amount
             tbody
-              each item in finishedProducts.items
+              if finishedProducts.items && finishedProducts.items.length
+                each item in finishedProducts.items
+                  tr
+                    // Format date same as in sales file
+                    td #{item.formattedDate}
+                    td #{item.productName}
+                    td #{item.quantity}
+                    td #{item.costPrice.toLocaleString()} Shs
+                    td #{(item.quantity * item.costPrice).toLocaleString()} Shs
+              else
                 tr
-                  td #{item.productName}
-                  td #{item.quantity}
-                  td #{item.unitPrice} Shs
-                  td #{item.quantity * item.unitPrice} Shs
+                  td(colspan='5').text-center.text-muted No stock records found.
 
       // Charts
       .row.g-4
@@ -93,9 +106,9 @@ html
       new Chart(ctxPie, {
         type: 'pie',
         data: {
-          labels: !{JSON.stringify(finishedProducts.items.map(i => i.productName))},
+          labels: !{JSON.stringify(finishedProducts.chartData.map(i => i.productName))},
           datasets: [{
-            data: !{JSON.stringify(finishedProducts.items.map(i => i.quantity))},
+            data: !{JSON.stringify(finishedProducts.chartData.map(i => i.quantity))},
             backgroundColor: ['#6f4e37','#8d6e63','#a1887f','#bcaaa4','#d7ccc8']
           }]
         }
@@ -103,10 +116,10 @@ html
       new Chart(ctxBar, {
         type: 'bar',
         data: {
-          labels: !{JSON.stringify(finishedProducts.items.map(i => i.productName))},
+          labels: !{JSON.stringify(finishedProducts.chartData.map(i => i.productName))},
           datasets: [{
             label: 'Quantity',
-            data: !{JSON.stringify(finishedProducts.items.map(i => i.quantity))},
+            data: !{JSON.stringify(finishedProducts.chartData.map(i => i.quantity))},
             backgroundColor: '#6f4e37'
           }]
         }

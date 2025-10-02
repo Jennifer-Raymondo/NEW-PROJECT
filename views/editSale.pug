@@ -19,6 +19,7 @@ html
             .col-md-6
               label.form-label Date
               input.form-control(type='date' name='Date' required value=sale.Date ? sale.Date.toISOString().slice(0,10) : '')
+
           // Product Info
           .row.mb-3
             .col-md-6
@@ -30,6 +31,7 @@ html
             .col-md-6
               label.form-label Product Name
               input.form-control(type='text' name='productName' required value=sale.productName)
+
           // Quantity and Transport
           .row.mb-3
             .col-md-6
@@ -41,11 +43,13 @@ html
                 option(value='') Choose
                 option(value='Yes' selected=sale.transport=='Yes') Yes
                 option(value='No' selected=sale.transport=='No') No
-         //selling price
-         .row.mb-3
-           .col-md-6
-            label.form-label Selling Price (UGX)
-            input.form-control(type='number' required name='sellingPrice' placeholder='e.g. 250000')
+
+          // Selling Price
+          .row.mb-3
+            .col-md-6
+              label.form-label Selling Price (UGX)
+              input.form-control(type='number' required name='sellingPrice' value=sale.sellingPrice placeholder='e.g. 250000')
+
           // Payment and Agent
           .row.mb-4
             .col-md-6
@@ -58,6 +62,7 @@ html
             .col-md-6
               label.form-label Sales Agent
               input.form-control(type='text' name='salesAgent' required value=sale.salesAgent)
+
           // Submit
           .d-flex.justify-content-between
             a.btn.btn-secondary(href='/saleslist') Cancel

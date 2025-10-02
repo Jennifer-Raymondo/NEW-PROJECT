@@ -4,47 +4,39 @@ const salesSchema = new mongoose.Schema({
   customerName: {
     type: String,
     required: true
-    
   },
- productType: {
-    type:String,
-    required:true
+  productType: {
+    type: String,
+    required: true
   },
   productName: {
-    type:String,
-    required:true
-  },
-
-  quantity: {
-    type:Number,
-    required:true
-  },
-
-  sellingPrice: { 
-    type: Number, 
+    type: String,
     required: true
-   },
-
-  Date: {
-    type:Date,
-    required:true
   },
-
-    salesAgent: {
-        type:String,
-        required:true
+  quantity: {
+    type: Number,
+    required: true
+  },
+  sellingPrice: {   // price per unit used in this sale
+    type: Number,
+    required: true
+  },
+  date: {   // lowercase for consistency
+    type: Date,
+    required: true
+  },
+  salesAgent: {
+    type: String,
+    required: true
   },
   transport: { 
-    type: String, 
+    type: String,   // "Yes" or "No"
     required: true 
   },
   paymentType: { 
-    type: String, 
+    type: String,   // "cash", "cheque", etc.
     required: true 
-  },
-  
+  }
 });
 
-
-
-module.exports = mongoose.model('sale', salesSchema);
+module.exports = mongoose.model('Sale', salesSchema);

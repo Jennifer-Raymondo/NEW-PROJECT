@@ -1,3 +1,4 @@
+//working routes
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
@@ -55,66 +56,38 @@ router.post(
   }
 );
 
+
+
+
+
 //dashborad
-router.get('/dashboard', ensureAuthenticated, async (req, res) => {
+// Example route (dashboard.js)
+router.get('/dashboard', ensureAuthenticated, ensureManager, async (req, res) => {
   try {
-    // 🚫 Attendants should never see the dashboard
-    if (req.user.role === 'attendant') {
-      return res.redirect('/saleslist');
-    }
-    
-    // 🔹 Aggregate stock by category
-    const stockTotals = await stockModels.aggregate([
-      {
-        $group: {
-          _id: "$category", // finished products / raw materials
-          totalQuantity: { $sum: "$quantity" },
-          totalCost: { $sum: { $multiply: ["$quantity", "$costPrice"] } }
-        }
-      }
-    ]);
+    const sales = await salesmodel.find();
+    const finishedItems = await stockModels.find();
 
-    // Split by category
-    const finishedProducts = stockTotals.find(item => item._id === "finished products") || { totalCost: 0, totalQuantity: 0 };
-    const rawMaterials = stockTotals.find(item => item._id === "raw material") || { totalCost: 0, totalQuantity: 0 };
+    // compute totals
+    const totalSales = sales.reduce((sum, s) => sum + (s.totalAmount || 0), 0);
+    const totalStockExpense = finishedItems.reduce((sum, s) => sum + (s.quantity * (s.costPrice || 0)), 0);
+    const totalProducts = finishedItems.reduce((sum, s) => sum + s.quantity, 0);
 
-    // Grand total stock expense
-    const totalStockExpense = stockTotals.reduce((acc, item) => acc + item.totalCost, 0);
+    // ✅ count sales records properly
+    const totalSalesRecords = sales.length;
 
-    // 🔹 Aggregate sales total
-   const salesTotals = await salesmodel.aggregate([
-  {
-    $group: {
-      _id: null,
-      totalSales: { $sum: { $multiply: ["$quantity", "$sellingPrice"] } } // ✅ compute total revenue
-    }
-  }
-]);
-    const totalSales = salesTotals[0]?.totalSales || 0;
-
-    // Render dashboards based on role
-    if (req.user.role === "manager") {
-      return res.render("dashboard", {
-        title: "Manager Dashboard",
-        user: req.user,
-        totalStockExpense,
-        totalSales,
-        finishedProducts,
-        rawMaterials,
-      });
-    } else if (req.user.role === "attendant") {
-      return res.render("attendant-dashboard", {
-        title: "Attendant Dashboard",
-        user: req.user
-      });
-    }
-
-    res.redirect("/login");
-  } catch (error) {
-    console.error("Dashboard aggregation error:", error.message);
-    res.status(500).send("Unable to load dashboard data");
+    res.render('dashboard', {
+      totalSales,
+      totalStockExpense,
+      finishedProducts: { totalQuantity: totalProducts },
+      salesRecords: { totalCount: totalSalesRecords }   // ✅ pass this
+    });
+  } catch (err) {
+    console.error("Dashboard error:", err);
+    res.status(500).send("Failed to load dashboard");
   }
 });
+
+
 
 
 // Logout
@@ -129,33 +102,127 @@ router.get('/logout', (req, res, next) => {
 
 
 
-// SALES list: both roles can see
+
+// ----------------------
+// SALES LIST (all transactions, attendants + managers)
+// ----------------------
 router.get('/saleslist', ensureAuthenticated, async (req, res) => {
   try {
+    // Fetch all sales as they are (every transaction)
     const items = await salesmodel.find().sort({ $natural: -1 });
-    res.render('salesTable', {
-      items,
-      role: req.user.role // send role to Pug to hide buttons for attendants
+
+    // Totals
+    let totalSales = 0;
+    let totalQuantitySold = 0;
+    items.forEach(sale => {
+      totalSales += sale.quantity * sale.sellingPrice;
+      totalQuantitySold += sale.quantity;
     });
-  } catch (error) {
-    res.status(500).send("Unable to get sales records");
+
+    res.render('salesList', {   // 🔹 use a different template
+      items,
+      totalSales,
+      totalQuantitySold,
+      role: req.user.role
+    });
+  } catch (err) {
+    console.error("Error loading Sales List:", err);
+    res.status(500).send("Unable to load sales list");
   }
 });
+
+
+
+
+// ----------------------
+// SALES RECORDS (summary view, managers only)
+// ----------------------
+router.get('/salesRecords', ensureAuthenticated, ensureManager, async (req, res) => {
+  try {
+    // Fetch all sales, latest first
+    const sales = await salesmodel.find().sort({ date: -1 });
+
+    // Group by product
+    const groupedSales = {};
+    sales.forEach(sale => {
+      if (!groupedSales[sale.productName]) {
+        groupedSales[sale.productName] = {
+          productName: sale.productName,
+          quantity: 0
+        };
+      }
+      groupedSales[sale.productName].quantity += sale.quantity;
+    });
+
+    const chartData = Object.values(groupedSales);
+
+    // Totals
+    const totalSales = sales.reduce((sum, s) => sum + (s.quantity * s.sellingPrice), 0);
+    const totalQuantitySold = sales.reduce((sum, s) => sum + s.quantity, 0);
+
+    res.render('salesRecords', {
+      items: sales,          // full list for table
+      chartData,             // ✅ grouped data for pie chart
+      totalSales,
+      totalQuantitySold,
+      role: req.user.role
+    });
+
+  } catch (err) {
+    console.error("Error loading Sales Records:", err);
+    res.status(500).send("Error loading Sales Records page");
+  }
+});
+
+
+
+
+// GET: Show sales entry form
+router.get('/sales', ensureAuthenticated, async (req, res) => {
+  try {
+    res.render('sales', { role: req.user.role });
+  } catch (err) {
+    console.error("Error loading sales page:", err);
+    res.status(500).send("Unable to load sales page");
+  }
+});
+
+
 
 // Record a sale: allow both roles
-router.get('/sales', ensureAuthenticated, (req, res) => {
-  res.render('sales', { title: 'Record Sale', role: req.user.role });
-});
-
 router.post('/sales', ensureAuthenticated, async (req, res) => {
   try {
+    const { productName, quantity } = req.body;
+
+    // 1️⃣ Find stock item by productName (you could also use productId if you store that)
+    const stockItem = await stockModels.findOne({ 
+  productName: { $regex: `^${productName}$`, $options: 'i' } 
+});
+
+    if (!stockItem) {
+      return res.status(404).send("Stock item not found!");
+    }
+
+    // 2️⃣ Check if enough stock is available
+    if (stockItem.quantity < quantity) {
+      return res.status(400).send("Not enough stock available for this sale!");
+    }
+
+    // 3️⃣ Reduce stock quantity
+    stockItem.quantity -= quantity;
+    await stockItem.save();
+
+    // 4️⃣ Save the sale
     const sale = new salesmodel(req.body);
     await sale.save();
+
     res.redirect('/saleslist');
   } catch (error) {
-    res.status(500).send("Failed to save sale");
+    console.error("Sale save error:", error.message);
+    res.status(500).send("Failed to save sale and update stock");
   }
 });
+
 
 // Manager only: edit/delete
 router.get('/sales/edit/:id', ensureManager, async (req, res) => {
@@ -199,11 +266,26 @@ router.get('/stock', ensureManager, (req, res) => {
 
 router.post('/stock', ensureManager, async (req, res) => {
   try {
-    const stock = new stockModels(req.body);
+    const { productName, productType, category, quantity, unitPrice, costPrice, supplierName } = req.body;
+
+    // Always create a new stock entry with its own date
+    const stock = new stockModels({
+      productName,
+      productType,
+      category,
+      quantity: Number(quantity),
+      unitPrice: Number(unitPrice) || 0,
+      costPrice: Number(costPrice) || 0,
+      supplierName,
+      dateReceived: new Date()   // ✅ new entry gets its own date
+    });
+
     await stock.save();
+
     res.redirect('/stocklist');
-  } catch {
-    res.redirect('/dashboard');
+  } catch (err) {
+    console.error("Error adding stock:", err);
+    res.status(500).send("Failed to add stock");
   }
 });
 
@@ -258,68 +340,57 @@ router.post('/stock/delete/:id', ensureManager, async (req, res) => {
 // ----------------------
 // MANAGER: FINISHED PRODUCTS
 // ----------------------
-router.get('/finishedProducts', ensureAuthenticated, ensureManager, async (req, res) => {
-  try {
-    const finishedItems = await stockModels.find({ category: 'finished products' });
+// router.get('/finishedProducts', ensureAuthenticated, ensureManager, async (req, res) => {
+//   try {
+//     // Fetch all items (no category filter anymore)
+//     const finishedItems = await stockModels.find();
 
-const totalQuantity = finishedItems.reduce((sum, item) => sum + item.quantity, 0);
-const totalValue = finishedItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-const categories = [...new Set(finishedItems.map(i => i.productType))].length;
+//     // Compute totals
+//     const totalQuantity = finishedItems.reduce((sum, item) => sum + item.quantity, 0);
+//     const totalValue = finishedItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
 
-res.render('finishedProducts', {
-  finishedProducts: {
-    totalQuantity,
-    totalValue,
-    categories,
-    items: finishedItems
-  }
-});
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error loading Finished Products page");
-  }
-});
+//     // Send only the needed fields
+//     res.render('finishedProducts', {
+//       finishedProducts: {
+//         totalQuantity,
+//         totalValue,
+//         items: finishedItems
+//       }
+//     });
+//   } catch (err) {
+//     console.error("Error loading Finished Products:", err);
+//     res.status(500).send("Error loading Finished Products page");
+//   }
+// });
+
 
 // ----------------------
-// MANAGER: RAW MATERIALS
+// MANAGER: sales Records
 // ----------------------
-router.get('/rawMaterials', ensureAuthenticated, ensureManager, async (req, res) => {
-  try {
-    const rawItems = await stockModels.find({ category: 'raw material' });
+// router.get('/salesRecords', ensureAuthenticated, ensureManager, async (req, res) => {
+//   try {
+//     // ✅ Fetch all sales
+//     const items = await salesmodel.find().sort({ $natural: -1 });
 
-    const totalQuantity = rawItems.reduce((sum, item) => sum + item.quantity, 0);
-    const totalExpense = rawItems.reduce((sum, item) => sum + (item.quantity * item.costPrice), 0);
+//     // ✅ Compute totals
+//     let totalSales = 0;
+//     let totalQuantitySold = 0;
+//     items.forEach(sale => {
+//       totalSales += sale.quantity * sale.sellingPrice;
+//       totalQuantitySold += sale.quantity;
+//     });
 
-
-    // ✅ count suppliers here
-    const suppliers = await stockModels.distinct("supplierName", { category: "raw material" });
-    const totalSuppliers = suppliers.length;
-
-    // Example dummy trends
-    const trends = [
-      { month: 'Jan', usage: 50 },
-      { month: 'Feb', usage: 70 },
-      { month: 'Mar', usage: 60 },
-      { month: 'Apr', usage: 80 },
-      { month: 'May', usage: 40 }
-    ];
-
-    res.render('rawMaterials', {
-      rawMaterials: {
-        totalQuantity,
-        totalExpense,
-        suppliers: totalSuppliers,
-        items: rawItems,
-        trends
-      }
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error loading Raw Materials page");
-  }
-});
-
-
+//     res.render('salesRecords', {
+//       items,               // ✅ so pug can do items.length
+//       totalSales,
+//       totalQuantitySold,
+//       role: req.user.role
+//     });
+//   } catch (err) {
+//     console.error("Error loading Sales Records:", err);
+//     res.status(500).send("Error loading Sales Records page");
+//   }
+// });
 
 
 
@@ -346,48 +417,69 @@ router.get('/receiptSales/:id', ensureAuthenticated, ensureAttendant, async (req
 // reports
 router.get('/reports', ensureAuthenticated, ensureManager, async (req, res) => {
   try {
-    // 🔹 Aggregate stock by category
-    const stockTotals = await stockModels.aggregate([
-      {
-        $group: {
-          _id: "$category",
-          totalQuantity: { $sum: "$quantity" },
-          totalCost: { $sum: { $multiply: ["$quantity", "$costPrice"] } }
-        }
-      }
-    ]);
-
-    // Split categories
-    const finishedProducts = stockTotals.find(item => item._id === "finished products") || { totalCost: 0, totalQuantity: 0 };
-    const rawMaterials = stockTotals.find(item => item._id === "raw material") || { totalCost: 0, totalQuantity: 0 };
-
-    // Grand total stock expense
-    const totalStockExpense = stockTotals.reduce((acc, item) => acc + item.totalCost, 0);
-
-    // 🔹 Aggregate sales total
     const salesTotals = await salesmodel.aggregate([
-      {
-        $group: {
-          _id: null,
-          totalSales: { $sum: { $multiply: ["$quantity", "$sellingPrice"] } }
-        }
-      }
+      { $group: { _id: null, totalSales: { $sum: { $multiply: ["$quantity", "$sellingPrice"] } } } }
     ]);
+    
     const totalSales = salesTotals[0]?.totalSales || 0;
-
-    // ✅ Now render reports page with the variables defined
-    res.render("reports", {
-      totalSales,
-      totalStockExpense,
-      finishedProducts,
-      rawMaterials
-    });
-
+    
+    res.render('reports', { totalSales });
   } catch (err) {
-    console.error("Reports error:", err.message);
+    console.error("Reports error:", err);
     res.status(500).send("Unable to load reports");
   }
 });
+
+
+
+
+// ----------------------
+// MANAGER: SALES REPORT
+// ----------------------
+router.get('/salesReport', ensureAuthenticated, ensureManager, async (req, res) => {
+  try {
+    // ✅ Aggregate monthly sales
+    const salesData = await salesmodel.aggregate([
+      {
+        $group: {
+          _id: { $month: "$Date" },
+          amount: { $sum: { $multiply: ["$quantity", "$sellingPrice"] } }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]);
+
+    // Map months (1=Jan, 2=Feb, etc.)
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const formattedData = salesData.map(s => ({
+      month: monthNames[s._id - 1],
+      amount: s.amount
+    }));
+
+    // ✅ Compute total sales
+    const totalSales = formattedData.reduce((acc, item) => acc + item.amount, 0);
+
+    res.render("salesReport", {
+      title: "Sales Report",
+      salesData: formattedData,
+      totalSales
+    });
+  } catch (err) {
+    console.error("Sales Report error:", err.message);
+    res.status(500).send("Unable to load sales report");
+  }
+});
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -410,21 +502,50 @@ router.get('/reports', ensureAuthenticated, ensureManager, async (req, res) => {
 // ---------------------
 
 // GET: Show employee list + registration form
-router.get('/employee', ensureAuthenticated, ensureManager, async (req, res) => {
+router.get('/finishedProducts', ensureAuthenticated, ensureManager, async (req, res) => {
   try {
-    const employees = await Employee.find(); // fetch all employees
-    res.render('employee', { employees });   // pass to pug
+    const finishedItems = await stockModels.find();
+
+    const totalQuantity = finishedItems.reduce((sum, item) => sum + item.quantity, 0);
+    const totalValue = finishedItems.reduce((sum, item) => sum + (item.quantity * (item.costPrice || 0)), 0);
+
+    // ✅ Format table rows with clean date
+    const formattedItems = finishedItems.map(item => {
+      let formattedDate = "—";
+      if (item.dateReceived) {
+        try {
+          formattedDate = new Date(item.dateReceived).toLocaleDateString("en-GB", {
+            day: "2-digit", month: "short", year: "numeric"
+          });
+        } catch (e) { formattedDate = "—"; }
+      }
+      return { ...item._doc, formattedDate };
+    });
+
+    // ✅ Group stock for chart (combine same productName)
+    const grouped = {};
+    finishedItems.forEach(item => {
+      if (!grouped[item.productName]) {
+        grouped[item.productName] = { productName: item.productName, quantity: 0 };
+      }
+      grouped[item.productName].quantity += item.quantity;
+    });
+
+    const chartData = Object.values(grouped);
+
+    res.render("finishedProducts", {
+      finishedProducts: {
+        totalQuantity,
+        totalValue,
+        items: formattedItems,
+        chartData   // ✅ now included for charts
+      }
+    });
   } catch (err) {
-    console.error("Error fetching employees:", err);
-    res.status(500).send("Error loading employee list");
+    console.error("Error loading Finished Products:", err);
+    res.status(500).send("Error loading Finished Products page");
   }
 });
-
-
-// ✅ GET: Show signup form
-// router.get('/signup', ensureAuthenticated, ensureManager, (req, res) => {
-//   res.render('signup'); // <-- this matches your signup.pug file
-// });
 
 
 
@@ -486,6 +607,110 @@ router.post('/edit-employee/:id', ensureAuthenticated, ensureManager, async (req
     res.status(500).send("Error updating employee");
   }
 });
+
+
+
+
+
+
+// POST: Generate report
+router.post('/generate', async (req, res) => {
+  try {
+    const { startDate, endDate, reportType, grouping } = req.body;
+
+    let match = {};
+    if (startDate && endDate) {
+      match.date = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      };
+    }
+
+    // choose model based on report type
+    let Model;
+    if (reportType === 'sales') Model = salesmodel;
+    else if (reportType === 'stock') Model = stockModels;
+    else return res.status(400).json({ error: 'Invalid report type' });
+
+    // group by depending on selection (daily, monthly, yearly)
+    let format = '%Y-%m-%d';
+    if (grouping === 'monthly') format = '%Y-%m';
+    if (grouping === 'yearly') format = '%Y';
+
+    const report = await Model.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id: { $dateToString: { format, date: "$date" } },
+          total: { $sum: "$amount" } // adjust field name if needed
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    res.json({ success: true, data: report });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to generate report" });
+  }
+});
+
+
+
+
+
+
+//report generate
+router.get('/reports/generate', ensureAuthenticated, ensureManager, async (req, res) => {
+  try {
+    const { fromDate, toDate, period } = req.query;
+
+    if (!fromDate || !toDate) {
+      return res.status(400).send("Please provide both From and To dates.");
+    }
+
+    const start = new Date(fromDate);
+    const end = new Date(toDate);
+    end.setHours(23, 59, 59, 999); // include full end day
+
+    // Aggregate sales in the selected period
+    let groupFormat;
+    if (period === 'daily') groupFormat = '%Y-%m-%d';
+    else if (period === 'weekly') groupFormat = '%Y-%U'; // week number
+    else if (period === 'monthly') groupFormat = '%Y-%m';
+    else if (period === 'yearly') groupFormat = '%Y';
+
+    const salesData = await salesmodel.aggregate([
+      { $match: { date: { $gte: start, $lte: end } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: groupFormat, date: "$date" } },
+          totalSales: { $sum: { $multiply: ["$quantity", "$sellingPrice"] } },
+          totalQuantity: { $sum: "$quantity" }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]);
+
+    // Compute grand totals
+    const grandTotalSales = salesData.reduce((sum, s) => sum + s.totalSales, 0);
+
+    res.render('reports', {
+      totalSales: grandTotalSales,
+      salesData,
+      fromDate,
+      toDate,
+      period,
+    });
+  } catch (err) {
+    console.error("Report generation error:", err);
+    res.status(500).send("Failed to generate report");
+  }
+});
+
+
+
+
 
 
 

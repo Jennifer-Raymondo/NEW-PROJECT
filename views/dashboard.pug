@@ -45,12 +45,16 @@ html
               a.nav-link(href='/dashboard') Dashboard
             li.nav-item
               a.nav-link(href='/sales') Sales
-            li.nav-item
-              a.nav-link(href='/saleslist') Saleslist
+            //- li.nav-item
+            //-   a.nav-link(href='/saleslist') Saleslist
+            //- li.nav-item
+            //-   a.nav-link(href='/salesRecords') SalesRecords
             li.nav-item
               a.nav-link(href='/stock') Stock
-            li.nav-item
-              a.nav-link(href='/stocklist') Stocklist
+            //- li.nav-item
+            //-   a.nav-link(href='/stocklist') Stocklist
+            //- li.nav-item
+            //-   a.nav-link(href='/finishedProducts') products
             li.nav-item
               a.nav-link(href='/signup') signup
             li.nav-item
@@ -62,13 +66,13 @@ html
 
       // 🔹 Summary Cards Row
       .row.g-3.mb-5
-        .col-6.col-md-3
-          a.text-decoration-none(href='/saleslist')
-            .card.text-center.shadow-sm.summary-card
-              .card-body.p-2
-                i.bx.bx-dollar-circle
-                h5.mt-2 Total Sales
-                p #{totalSales} UGX
+        //- .col-6.col-md-3
+        //-   a.text-decoration-none(href='/saleslist')
+        //-     .card.text-center.shadow-sm.summary-card
+        //-       .card-body.p-2
+        //-         i.bx.bx-dollar-circle
+        //-         h5.mt-2 Total Sales
+        //-         p #{totalSales} UGX
         .col-6.col-md-3
           a.text-decoration-none(href='/stocklist')
             .card.text-center.shadow-sm.summary-card
@@ -81,15 +85,15 @@ html
             .card.text-center.shadow-sm.summary-card
               .card-body.p-2
                 i.bx.bx-package
-                h5.mt-2 Finished Products
-                 p #{finishedProducts.totalQuantity} items
+                h5.mt-2 Products Available
+                p #{finishedProducts.totalQuantity} items
         .col-6.col-md-3
-          a.text-decoration-none(href='/rawMaterials')
+          a.text-decoration-none(href='/salesRecords')
             .card.text-center.shadow-sm.summary-card
               .card-body.p-2
-                i.bx.bx-truck
-                h5.mt-2 Raw Materials
-                p #{rawMaterials.totalQuantity} items
+                i.bx.bx-receipt 
+                h5.mt-2 Sales Records
+                p #{salesRecords.totalCount} records
       // 🔹 Quick Links Section
       .row.g-4
         .col-12.col-md-4
