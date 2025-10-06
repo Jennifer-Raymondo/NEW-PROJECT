@@ -7,11 +7,31 @@ html
     link(href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet')
     link(rel='stylesheet' href='/css/style.css')
   body
+    // Navbar
+    nav.navbar.navbar-expand-lg.navbar-dark.bg-dark.py-2
+      .container-fluid
+        a.navbar-brand(href='/dashboard') MWF
+        button.navbar-toggler(type='button' data-bs-toggle='collapse' data-bs-target='#navbarNav')
+          span.navbar-toggler-icon
+        #navbarNav.collapse.navbar-collapse
+          ul.navbar-nav
+            li.nav-item
+              a.nav-link(href='/dashboard') Dashboard
+            li.nav-item
+              a.nav-link(href='/sales') Sales
+            li.nav-item
+              a.nav-link(href='/saleslist') Saleslist
+            li.nav-item
+              a.nav-link(href='/salesRecords') SalesRecords
+            li.nav-item
+              a.nav-link.text-danger(href='/logout') Logout
+
     .container.mt-5
-      .sales-form-container.mx-auto(style='max-width: 600px;')
-        h2 Edit Sale
-        form(action=`/sales/edit/${sale._id}` method='post')
-          // Customer Info
+      .sales-form-container.mx-auto(style='max-width: 700px;')
+        h2.text-center.mb-4 Edit Sale
+        form#editSaleForm(action=`/sales/edit/${sale._id}` method='post')
+          
+          // Customer Info: Name and Date
           .row.mb-3
             .col-md-6
               label.form-label Customer Name
@@ -20,7 +40,7 @@ html
               label.form-label Date
               input.form-control(type='date' name='Date' required value=sale.Date ? sale.Date.toISOString().slice(0,10) : '')
 
-          // Product Info
+          // Product Info: Type and Name
           .row.mb-3
             .col-md-6
               label.form-label Product Type
@@ -44,13 +64,16 @@ html
                 option(value='Yes' selected=sale.transport=='Yes') Yes
                 option(value='No' selected=sale.transport=='No') No
 
-          // Selling Price
+          // Selling Price and Total Amount side by side
           .row.mb-3
             .col-md-6
               label.form-label Selling Price (UGX)
               input.form-control(type='number' required name='sellingPrice' value=sale.sellingPrice placeholder='e.g. 250000')
+            .col-md-6
+              label.form-label Total Amount (UGX)
+              input#totalAmount.form-control(type='number' readonly value=(sale.quantity * sale.sellingPrice) style='background-color:#f8f9fa; font-weight:bold;')
 
-          // Payment and Agent
+          // Payment Type and Sales Agent
           .row.mb-4
             .col-md-6
               label.form-label Payment Type
@@ -69,3 +92,20 @@ html
             button.btn.btn-brown(type='submit') Update Sale
 
     script(src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js')
+    // Optional script to calculate Total Amount dynamically
+    script.
+      document.addEventListener('DOMContentLoaded', function () {
+        const quantityInput = document.querySelector('input[name="quantity"]');
+        const priceInput = document.querySelector('input[name="sellingPrice"]');
+        const totalInput = document.getElementById('totalAmount');
+
+        function calculateTotal() {
+          const qty = parseFloat(quantityInput.value) || 0;
+          const price = parseFloat(priceInput.value) || 0;
+          totalInput.value = (qty * price).toFixed(2);
+        }
+
+        quantityInput.addEventListener('input', calculateTotal);
+        priceInput.addEventListener('input', calculateTotal);
+      });
+script(src='/js/formValidation.js')

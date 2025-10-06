@@ -16,20 +16,12 @@ html
           ul.navbar-nav
             li.nav-item
               a.nav-link(href='/dashboard') Dashboard
-            //- li.nav-item
-            //-   a.nav-link(href='/sales') Sales
-            //- li.nav-item
-            //-   a.nav-link(href='/saleslist') Saleslist
-            //- li.nav-item
-            //-   a.nav-link(href='/salesRecords') SalesRecords
             li.nav-item
               a.nav-link(href='/stock') Stock
             li.nav-item
               a.nav-link(href='/stocklist') Stocklist
             li.nav-item
-              a.nav-link(href='/finishedProducts') products
-            //- li.nav-item
-            //-   a.nav-link(href='/signup') signup
+              a.nav-link(href='/finishedProducts') Products
             li.nav-item
               a.nav-link.text-danger(href='/logout') Log out
 
@@ -39,7 +31,9 @@ html
           .card.shadow-lg.p-4(style="background-color:#DEB887; border-radius:10px;")
             h2.text-center.mb-4 Record New Stock
             hr
-            form(action='/stock' method='post')
+            form#addStockForm(action='/stock' method='post')
+
+              // Product Name & Product Type side by side
               .row.mb-3
                 .col-md-6
                   label.form-label Product Name
@@ -60,6 +54,8 @@ html
                     option(value='') Choose...
                     option(value='wood') Wood
                     option(value='furniture') Furniture
+
+              // Supplier Name & Cost Price side by side
               .row.mb-3
                 .col-md-6
                   label.form-label Supplier Name
@@ -67,26 +63,29 @@ html
                 .col-md-6
                   label.form-label Cost Price (UGX)
                   input.form-control(type='number' min='1' required name='costPrice')
+
+              // Date Received & Quality side by side
               .row.mb-3
                 .col-md-6
-                  label.form-label Selling Price (UGX)
-                  input.form-control(type='number' min='1' required name='sellingPrice')
-                .col-md-6
-                  label.form-label Quantity
-                  input.form-control(type='number' min='1' required name='quantity')
-              .row.mb-3
-                .col-md-12
                   label.form-label Date Received
                   input.form-control(type='date' required name='dateReceived')
-              .row.mb-3
-                .col-md-12
+                .col-md-6
                   label.form-label Quality
                   select.form-select(name='quality' required)
                     option(value='') Select quality
                     option(value='premium') Premium
                     option(value='standard') Standard
                     option(value='lowGrade') Low Grade
+
+              // Quantity full-width at the bottom
+              .row.mb-3
+                .col-12
+                  label.form-label Quantity
+                  input.form-control(type='number' min='1' required name='quantity')
+
               .d-grid
                 button.btn.btn-dark(type='submit') Add to Stock
 
     script(src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js')
+    script(src='/js/formValidation.js')
+
