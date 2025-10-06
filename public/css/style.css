@@ -132,34 +132,7 @@ text-decoration: underline;
 }
 
 
- /* signup */
-/* #signup-page {
-  font-family: Arial, sans-serif;
-  background:url('../images/wood.jpg');
-}
-
-#signup-page {
-  max-width: 500px;
-  margin: 80px auto;
-  padding: 50px;
-  background: burlywood;
-  border-radius: 40px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-#signup-page .btn-custom {
-  background-color: #8b5e3c;
-  color: white;
-  width: 100%;
-}
- */
-
-
-    /* login */
-    /* body {
-      font-family: Arial, sans-serif;
-      background:url('../images/wood.jpg');
-    } */
+ 
     .login-container {
       max-width: 500px;
       margin: 80px auto;

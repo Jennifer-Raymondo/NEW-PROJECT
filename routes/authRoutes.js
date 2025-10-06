@@ -2,12 +2,12 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
-const Employee = require('../models/employeeModel')
+//const Employee = require('../models/employeeModel')
 
 
 
 // Models
-const User = require('../models/userModel');
+const Employee = require('../models/employeeModel');
 const salesmodel = require('../models/salesModels');
 const stockModels = require('../models/stockModels');
 
@@ -26,15 +26,16 @@ router.get('/', (req, res) => {
 router.get('/signup', (req, res) => res.render('signup'));
 router.post('/signup', async (req, res) => {
   try {
-    const { username, password, role } = req.body;
-    const user = new User({ username, role });
-    await User.register(user, password); // passport-local-mongoose
+    const { fullname, email, phone, department, username, password, role } = req.body;
+    const employee = new Employee({ fullname, email, phone, department, username, role });
+    await Employee.register(employee, password);
     res.redirect('/login');
   } catch (err) {
     console.error("Signup error:", err);
-    res.send(" Error signing up user. Make sure username is unique.");
+    res.status(400).send("Error signing up user. Check all required fields and uniqueness.");
   }
 });
+
 
 
 // Login form
@@ -548,6 +549,21 @@ router.get('/finishedProducts', ensureAuthenticated, ensureManager, async (req, 
 });
 
 
+
+
+
+
+
+// GET: Show employee page (list + registration form)
+router.get('/employee', ensureAuthenticated, ensureManager, async (req, res) => {
+  try {
+    const employees = await Employee.find(); // fetch all employees from DB
+    res.render('employee', { employees });   // render employee.pug/ejs with data
+  } catch (err) {
+    console.error("Error loading employee page:", err);
+    res.status(500).send("Error loading employee page");
+  }
+});
 
 // POST: Register new employee
 router.post('/employee', ensureAuthenticated, ensureManager, async (req, res) => {
