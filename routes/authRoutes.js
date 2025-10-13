@@ -179,14 +179,40 @@ router.get('/salesRecords', ensureAuthenticated, ensureManager, async (req, res)
 
 
 // GET: Show sales entry form
+// ✅ SALES FORM (aggregated stock quantities)
 router.get('/sales', ensureAuthenticated, async (req, res) => {
   try {
-    res.render('sales', { role: req.user.role });
+    // Aggregate stock quantities by product name and type
+    const stocks = await stockModels.aggregate([
+      {
+        $group: {
+          _id: { productName: "$productName", productType: "$productType" },
+          totalQuantity: { $sum: "$quantity" }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          productName: "$_id.productName",
+          productType: "$_id.productType",
+          quantity: "$totalQuantity"
+        }
+      },
+      { $sort: { productType: 1, productName: 1 } }
+    ]);
+
+    res.render('sales', { 
+      role: req.user.role, 
+      stocks 
+    });
   } catch (err) {
     console.error("Error loading sales page:", err);
     res.status(500).send("Unable to load sales page");
   }
 });
+
+
+
 
 
 
@@ -677,9 +703,111 @@ router.post('/generate', async (req, res) => {
 
 
 //report generate
+// ----------------------
+// REPORT GENERATION FIXED (Sales + Stock)
+// ----------------------
+// router.get('/reports/generate', ensureAuthenticated, ensureManager, async (req, res) => {
+//   try {
+//     const { fromDate, toDate, period, reportType } = req.query;
+
+//     if (!fromDate || !toDate) {
+//       return res.status(400).send("Please provide both From and To dates.");
+//     }
+
+//     const start = new Date(fromDate);
+//     const end = new Date(toDate);
+//     end.setHours(23, 59, 59, 999);
+
+//     // Determine grouping period
+//     let groupFormat = '%Y-%m-%d';
+//     if (period === 'weekly') groupFormat = '%Y-%U';
+//     if (period === 'monthly') groupFormat = '%Y-%m';
+//     if (period === 'yearly') groupFormat = '%Y';
+
+//     let salesData = [];
+//     let totalSales = 0;
+
+//     // ✅ SALES REPORT
+//     if (reportType === 'sales') {
+//       salesData = await salesmodel.aggregate([
+//         { $match: { date: { $gte: start, $lte: end } } },
+//         {
+//           $group: {
+//             _id: { $dateToString: { format: groupFormat, date: "$date" } },
+//             totalSales: { $sum: { $multiply: ["$quantity", "$sellingPrice"] } },
+//             totalQuantity: { $sum: "$quantity" }
+//           }
+//         },
+//         { $sort: { "_id": 1 } }
+//       ]);
+
+//       totalSales = salesData.reduce((sum, s) => sum + s.totalSales, 0);
+//     }
+
+//     // ✅ STOCK REPORT
+//     else if (reportType === 'stock') {
+//       salesData = await stockModels.aggregate([
+//         { $match: { dateReceived: { $gte: start, $lte: end } } },
+//         {
+//           $group: {
+//             _id: { $dateToString: { format: groupFormat, date: "$dateReceived" } },
+//             totalStockValue: { $sum: { $multiply: ["$quantity", "$costPrice"] } },
+//             totalQuantity: { $sum: "$quantity" }
+//           }
+//         },
+//         { $sort: { "_id": 1 } }
+//       ]);
+
+//       totalSales = salesData.reduce((sum, s) => sum + s.totalStockValue, 0);
+//     }
+
+//     res.render('reports', {
+//       totalSales,
+//       salesData,
+//       fromDate,
+//       toDate,
+//       period,
+//       reportType
+//     });
+//   } catch (err) {
+//     console.error("Report generation error:", err);
+//     res.status(500).send("Failed to generate report");
+//   }
+// });
+
+
+// ----------------------
+// REPORT GENERATION WITH FULL DETAILS
+// ----------------------
+// ----------------------
+// REPORTS PAGE - Initial Load
+// ----------------------
+// ----------------------
+// REPORTS PAGE - Initial Load
+// ----------------------
+router.get('/reports', ensureAuthenticated, ensureManager, async (req, res) => {
+  try {
+    res.render('reports', {
+      reportData: [],  // Changed from null to empty array
+      totalAmount: 0,
+      totalQuantity: 0,
+      fromDate: '',
+      toDate: '',
+      period: 'daily',
+      reportType: 'sales'
+    });
+  } catch (err) {
+    console.error("Reports error:", err);
+    res.status(500).send("Unable to load reports");
+  }
+});
+
+// ----------------------
+// REPORT GENERATION WITH FULL DETAILS
+// ----------------------
 router.get('/reports/generate', ensureAuthenticated, ensureManager, async (req, res) => {
   try {
-    const { fromDate, toDate, period } = req.query;
+    const { fromDate, toDate, period, reportType } = req.query;
 
     if (!fromDate || !toDate) {
       return res.status(400).send("Please provide both From and To dates.");
@@ -687,53 +815,52 @@ router.get('/reports/generate', ensureAuthenticated, ensureManager, async (req, 
 
     const start = new Date(fromDate);
     const end = new Date(toDate);
-    end.setHours(23, 59, 59, 999); // include full end day
+    end.setHours(23, 59, 59, 999);
 
-    // Aggregate sales in the selected period
-    let groupFormat;
-    if (period === 'daily') groupFormat = '%Y-%m-%d';
-    else if (period === 'weekly') groupFormat = '%Y-%U'; // week number
-    else if (period === 'monthly') groupFormat = '%Y-%m';
-    else if (period === 'yearly') groupFormat = '%Y';
+    let reportData = [];
+    let totalAmount = 0;
+    let totalQuantity = 0;
 
-    const salesData = await salesmodel.aggregate([
-      { $match: { date: { $gte: start, $lte: end } } },
-      {
-        $group: {
-          _id: { $dateToString: { format: groupFormat, date: "$date" } },
-          totalSales: { $sum: { $multiply: ["$quantity", "$sellingPrice"] } },
-          totalQuantity: { $sum: "$quantity" }
-        }
-      },
-      { $sort: { "_id": 1 } }
-    ]);
+    // ✅ SALES REPORT - Show all individual records
+    if (reportType === 'sales') {
+      reportData = await salesmodel.find({
+        date: { $gte: start, $lte: end }
+      }).sort({ date: -1 });
 
-    // Compute grand totals
-    const grandTotalSales = salesData.reduce((sum, s) => sum + s.totalSales, 0);
+      // Calculate totals
+      reportData.forEach(record => {
+        totalAmount += record.quantity * record.sellingPrice;
+        totalQuantity += record.quantity;
+      });
+    }
+
+    // ✅ STOCK REPORT - Show all individual records
+    else if (reportType === 'stock') {
+      reportData = await stockModels.find({
+        dateReceived: { $gte: start, $lte: end }
+      }).sort({ dateReceived: -1 });
+
+      // Calculate totals
+      reportData.forEach(record => {
+        totalAmount += record.quantity * (record.costPrice || 0);
+        totalQuantity += record.quantity;
+      });
+    }
 
     res.render('reports', {
-      totalSales: grandTotalSales,
-      salesData,
+      reportData,
+      totalAmount,
+      totalQuantity,
       fromDate,
       toDate,
       period,
+      reportType
     });
   } catch (err) {
     console.error("Report generation error:", err);
     res.status(500).send("Failed to generate report");
   }
 });
-
-
-
-
-
-
-
-
-
-
-
 
 
 

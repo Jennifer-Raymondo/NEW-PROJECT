@@ -1,72 +1,48 @@
-doctype html
-html
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport" content="width=device-width, initial-scale=1.0")
-    title Sales Dashboard - MWF
-    link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet")
-    link(href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet")
-    link(rel='stylesheet' href='/css/style.css')
-    style.
-      .summary-card {
-        background-color: burlywood;
-        color: #4e342e;
-        border-radius: 0.75rem;
-        padding: 1rem;
-        transition: transform 0.2s ease-in-out;
-        text-align: center;
-        font-size: 0.9rem;
-      }
-      .summary-card:hover { transform: translateY(-3px); }
+extends layout
 
-  body
-    // Navbar
-    nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
-      .container-fluid
-        a.navbar-brand(href='/dashboard') MWF Dashboard
-        button.navbar-toggler(type='button' data-bs-toggle='collapse' data-bs-target='#navbarNav')
-          span.navbar-toggler-icon
-        #navbarNav.collapse.navbar-collapse.justify-content-end
-          ul.navbar-nav
-            li.nav-item
-              a.nav-link(href='/dashboard') Dashboard
-            li.nav-item
-              a.nav-link(href='/sales') Sales
-            li.nav-item
-              a.nav-link(href='/saleslist') Saleslist
-            li.nav-item
-            //-   a.nav-link(href='/salesRecords') SalesRecords
-            //- li.nav-item
-            //-   a.nav-link(href='/stock') Stock
-            //- li.nav-item
-            //-   a.nav-link(href='/stocklist') Stocklist
-            //- li.nav-item
-            //-   a.nav-link(href='/signup') signup
-            li.nav-item
-              a.nav-link.text-danger(href='/logout') Log out
+block navbar
+  nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
+    .container-fluid
+      a.navbar-brand(href='/dashboard') MWF Dashboard
+      button.navbar-toggler(type='button', data-bs-toggle='collapse', data-bs-target='#navbarNav', aria-controls='navbarNav', aria-expanded='false', aria-label='Toggle navigation')
+        span.navbar-toggler-icon
+      #navbarNav.collapse.navbar-collapse.justify-content-end
+        ul.navbar-nav.ms-auto
+          li.nav-item
+            a.nav-link(href='/dashboard') Dashboard
+          li.nav-item
+            a.nav-link(href='/sales') Sales
+          li.nav-item
+            a.nav-link(href='/saleslist') Saleslist
+          li.nav-item
+            a.nav-link.active(href='/salesRecords') SalesRecords
+          li.nav-item
+            a.nav-link.text-danger(href='/logout') Logout
 
-    .container.my-5
-      h2.text-center.mb-4 Sales Records
+block content
+  .container.my-5
+    h2.text-center.mb-4 Sales Dashboard
 
-      // Summary Cards
-      .row.g-3.mb-4
-        .col-md-4
-          .summary-card
-            h5 Total Sales
-            p #{totalSales.toLocaleString()} UGX
-        .col-md-4
-          .summary-card
-            h5 Total Quantity Sold
-            p #{totalQuantitySold} items
-        .col-md-4
-          .summary-card
-            h5 Number of Transactions
-            p #{items.length}
+    // 🔸 Summary Cards
+    .row.g-3.mb-4
+      .col-md-4
+        .summary-card
+          h5 Total Sales
+          p #{totalSales.toLocaleString()} UGX
+      .col-md-4
+        .summary-card
+          h5 Total Quantity Sold
+          p #{totalQuantitySold} items
+      .col-md-4
+        .summary-card
+          h5 Number of Transactions
+          p #{items.length}
 
-      // Sales Table
-      .card.shadow-sm.mb-5
-        .card-body
-          h5.mb-3 Detailed Sales Table
+    // 🔸 Sales Table
+    .card.shadow-sm.mb-5
+      .card-body
+        h5.mb-3 Detailed Sales Table
+        .table-responsive
           table.table.table-striped.table-hover
             thead.table-dark
               tr
@@ -92,64 +68,77 @@ html
                 tr
                   td(colspan='8').text-center.text-muted No sales records found.
 
-      // Sales Charts
-      .row.g-4
-        .col-md-6
-          .card.shadow-sm.p-3
-            h6.text-center.mb-3 Sales by Product
-            canvas#salesByProductChart
-        .col-md-6
-          .card.shadow-sm.p-3
-            h6.text-center.mb-3 Daily Sales
-            canvas#dailySalesChart
+    // 🔸 Sales Charts
+    .row.g-4
+      .col-md-6
+        .card.shadow-sm.p-3
+          h6.text-center.mb-3 Sales by Product
+          canvas#salesByProductChart
+      .col-md-6
+        .card.shadow-sm.p-3
+          h6.text-center.mb-3 Daily Sales
+          canvas#dailySalesChart
 
-    // Scripts
-    script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js")
-    script(src="https://cdn.jsdelivr.net/npm/chart.js")
-    script.
-      // ---------- Sales by Product Pie Chart ----------
-      const salesByProductCtx = document.getElementById('salesByProductChart');
-      new Chart(salesByProductCtx, {
-        type: 'pie',
-        data: {
-          labels: !{JSON.stringify(chartData.map(i => i.productName))},
-          datasets: [{
-            data: !{JSON.stringify(chartData.map(i => i.quantity))},
-            backgroundColor: ['#6f4e37','#8d6e63','#a1887f','#bcaaa4','#d7ccc8']
-          }]
+  // 🔸 Inline styling for summary cards
+  style.
+    .summary-card {
+      background-color: burlywood;
+      color: #4e342e;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      transition: transform 0.2s ease-in-out;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .summary-card:hover {
+      transform: translateY(-3px);
+    }
+
+  // 🔸 Chart Scripts
+  script(src='https://cdn.jsdelivr.net/npm/chart.js')
+  script.
+    // ---------- Sales by Product Pie Chart ----------
+    const salesByProductCtx = document.getElementById('salesByProductChart');
+    new Chart(salesByProductCtx, {
+      type: 'pie',
+      data: {
+        labels: !{JSON.stringify(chartData.map(i => i.productName))},
+        datasets: [{
+          data: !{JSON.stringify(chartData.map(i => i.quantity))},
+          backgroundColor: ['#6f4e37','#8d6e63','#a1887f','#bcaaa4','#d7ccc8']
+        }]
+      }
+    });
+
+    // ---------- Daily Sales Line Chart ----------
+    const dailySalesCtx = document.getElementById('dailySalesChart');
+    const dailySalesData = {};
+    !{JSON.stringify(items)}.forEach(sale => {
+      const date = new Date(sale.date).toLocaleDateString('en-GB', {
+        day: '2-digit', month: 'short', year: 'numeric'
+      });
+      dailySalesData[date] = (dailySalesData[date] || 0) + sale.quantity * sale.sellingPrice;
+    });
+
+    const sortedDailySales = Object.entries(dailySalesData).sort(
+      (a, b) => new Date(a[0]) - new Date(b[0])
+    );
+
+    new Chart(dailySalesCtx, {
+      type: 'line',
+      data: {
+        labels: sortedDailySales.map(entry => entry[0]),
+        datasets: [{
+          label: 'Daily Sales (UGX)',
+          data: sortedDailySales.map(entry => entry[1]),
+          fill: false,
+          borderColor: '#6f4e37',
+          tension: 0.3
+        }]
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: true }
         }
-      });
-
-      // ---------- Daily Sales Line Chart ----------
-      const dailySalesCtx = document.getElementById('dailySalesChart');
-      const dailySalesData = {};
-      !{JSON.stringify(items)}.forEach(sale => {
-        const date = new Date(sale.date).toLocaleDateString('en-GB', {
-          day: '2-digit', month: 'short', year: 'numeric'
-        });
-        dailySalesData[date] = (dailySalesData[date] || 0) + sale.quantity * sale.sellingPrice;
-      });
-
-      // Sort dates in ascending order
-      const sortedDailySales = Object.entries(dailySalesData).sort(
-        (a, b) => new Date(a[0]) - new Date(b[0])
-      );
-
-      new Chart(dailySalesCtx, {
-        type: 'line',
-        data: {
-          labels: sortedDailySales.map(entry => entry[0]),
-          datasets: [{
-            label: 'Daily Sales (UGX)',
-            data: sortedDailySales.map(entry => entry[1]),
-            fill: false,
-            borderColor: '#6f4e37',
-            tension: 0.3
-          }]
-        },
-        options: {
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
+      }
+    });
