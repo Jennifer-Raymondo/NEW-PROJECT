@@ -39,23 +39,30 @@ router.post('/signup', async (req, res) => {
 
 
 // Login form
-router.get('/login', (req, res) => res.render('login'));
+router.get('/login', (req, res) => {
+  const error = req.query.error; // get error message from query string
+  res.render('login', { error });
+});
 
-router.post(
-  '/login',
-  passport.authenticate('local', { failureRedirect: '/login' }),
-  (req, res) => {
-    if (!req.user) return res.redirect('/login'); // sanity check
+router.post('/login', (req, res, next) => {
+  passport.authenticate('local', (err, user, info) => {
+    if (err) return next(err);
 
+    // No user found → wrong credentials
+    if (!user) {
+      return res.redirect('/login?error=Invalid username or password');
+    }
 
-     // ✅ Redirect attendants straight to saleslist
-    if (req.user.role === 'attendant') return res.redirect('/saleslist');
+    req.logIn(user, (err) => {
+      if (err) return next(err);
 
+      // redirect based on role
+      if (user.role === 'attendant') return res.redirect('/saleslist');
+      return res.redirect('/dashboard');
+    });
+  })(req, res, next);
+});
 
-    // ✅ Both roles redirect to /dashboard
-    return res.redirect('/dashboard');
-  }
-);
 
 
 

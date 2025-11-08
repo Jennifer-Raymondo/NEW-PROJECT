@@ -24,6 +24,12 @@ html
         font-size: 0.9rem;
         color: #555;
       }
+      @media print {
+        .no-print {
+          display: none !important;
+        }
+      }
+
   body.bg-light
     .container.mt-5
       .receipt.shadow
@@ -32,17 +38,17 @@ html
           small.text-muted= new Date().toLocaleString()
         hr
         p
-          b Customer: 
-          | #{sale.customerName}
+          b Customer:
+          |  #{sale.customerName}
         p
-          b Sales Agent: 
-          | #{sale.salesAgent}
+          b Sales Agent:
+          |  #{sale.salesAgent}
         p
-          b Transport: 
-          | #{sale.transport}
+          b Transport:
+          |  #{sale.transport}
         p
-          b Date: 
-          | #{sale.Date ? sale.Date.toLocaleDateString() : ''}
+          b Date:
+          |  #{sale.Date ? sale.Date.toLocaleDateString() : ''}
         hr
         table.table.table-bordered.mt-3
           thead.table-light
@@ -58,10 +64,12 @@ html
               td #{sale.sellingPrice} Shs
               td #{sale.quantity * sale.sellingPrice} Shs
         h5.text-end.mt-3
-          b Total: 
-          | #{sale.quantity * sale.sellingPrice} Shs
+          b Total:
+          |  #{sale.quantity * sale.sellingPrice} Shs
         .receipt-footer
           p Thank you for your purchase!  
           p.text-muted For inquiries, contact MWF support.
-        .text-end.mt-3
-          button.btn.btn-primary(type="button" onclick="window.print()") Print Receipt
+        // ✅ Buttons
+        .text-end.mt-3.d-flex.justify-content-end.gap-2.no-print
+          a.btn.btn-secondary(href='/saleslist') ← Back to Sales List
+          button.btn.btn-primary(type="button" onclick="window.print()") 🖨️ Print Receipt
