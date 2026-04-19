@@ -39,8 +39,26 @@ head
 section.hero
   h1 WELCOME TO MWF FURNITURE
   p Elegant, Durable And Stylish Wood Furniture
-  //a.btn.mt-3.ms-2(href='/signup') Sign Up
-  a.btn.mt-3(href='/login') Login to Continue
+
+  .mt-3.d-flex.justify-content-center.gap-3.flex-wrap
+    a.btn(href='/login') Login
+    a.btn.btn-demo(href='/demo') 🚀 Get Started (Demo)
+
+  p.demo-note 🔒 Login requires credentials &nbsp;| Use Get Started to explore
+
+  style.
+    .btn-demo {
+      background-color: #4a7c59;
+      color: white;
+      border-radius: 25px;
+      padding: 10px 25px;
+      text-decoration: none;
+    }
+    .demo-note {
+      color: rgba(255,255,255,0.8);
+      font-size: 0.85rem;
+      margin-top: 6px;
+    }
 // Furniture Showcase
 .container.my-5
   h2.text-center.mb-4(style='color: white;') OUR POPULAR DESIGNS

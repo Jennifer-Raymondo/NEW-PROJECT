@@ -22,6 +22,41 @@ router.get('/', (req, res) => {
   res.render('index', { title: 'Landing Page' });
 });
 
+
+
+// ----------------------
+// DEMO ROUTE (no auth required)
+// ----------------------
+router.get('/demo', async (req, res) => {
+  try {
+    req.session.isDemo = true;
+
+    // ✅ Force session to save BEFORE rendering
+    req.session.save(async (err) => {
+      if (err) console.error('Session save error:', err);
+
+      const sales = await salesmodel.find();
+      const finishedItems = await stockModels.find();
+
+      const totalSales = sales.reduce((sum, s) => sum + (s.totalAmount || 0), 0);
+      const totalStockExpense = finishedItems.reduce((sum, s) => sum + (s.quantity * (s.costPrice || 0)), 0);
+      const totalProducts = finishedItems.reduce((sum, s) => sum + s.quantity, 0);
+      const totalSalesRecords = sales.length;
+
+      res.render('dashboard', {
+        totalSales,
+        totalStockExpense,
+        finishedProducts: { totalQuantity: totalProducts },
+        salesRecords: { totalCount: totalSalesRecords }
+      });
+    });
+  } catch (err) {
+    console.error("Demo error:", err);
+    res.status(500).send("Failed to load demo");
+  }
+});
+
+
 // Signup form
 router.get('/signup', (req, res) => res.render('signup'));
 router.post('/signup', async (req, res) => {
@@ -55,7 +90,7 @@ router.post('/login', (req, res, next) => {
 
     req.logIn(user, (err) => {
       if (err) return next(err);
-
+      req.session.isDemo = false; 
       // redirect based on role
       if (user.role === 'attendant') return res.redirect('/saleslist');
       return res.redirect('/dashboard');
@@ -111,15 +146,9 @@ router.get('/logout', (req, res, next) => {
 
 
 
-// ----------------------
-// SALES LIST (all transactions, attendants + managers)
-// ----------------------
 router.get('/saleslist', ensureAuthenticated, async (req, res) => {
   try {
-    // Fetch all sales as they are (every transaction)
     const items = await salesmodel.find().sort({ $natural: -1 });
-
-    // Totals
     let totalSales = 0;
     let totalQuantitySold = 0;
     items.forEach(sale => {
@@ -127,17 +156,22 @@ router.get('/saleslist', ensureAuthenticated, async (req, res) => {
       totalQuantitySold += sale.quantity;
     });
 
-    res.render('salesList', {   // 🔹 use a different template
+    res.render('salesList', {
       items,
       totalSales,
       totalQuantitySold,
-      role: req.user.role
+      role: req.user ? req.user.role : 'manager'  // ✅ safe for demo
     });
   } catch (err) {
     console.error("Error loading Sales List:", err);
     res.status(500).send("Unable to load sales list");
   }
 });
+
+// ----------------------
+// SALES LIST (all transactions, attendants + managers)
+// ----------------------
+
 
 
 
@@ -173,7 +207,7 @@ router.get('/salesRecords', ensureAuthenticated, ensureManager, async (req, res)
       chartData,             // ✅ grouped data for pie chart
       totalSales,
       totalQuantitySold,
-      role: req.user.role
+       role: req.user ? req.user.role : 'manager' 
     });
 
   } catch (err) {
@@ -208,10 +242,10 @@ router.get('/sales', ensureAuthenticated, async (req, res) => {
       { $sort: { productType: 1, productName: 1 } }
     ]);
 
-    res.render('sales', { 
-      role: req.user.role, 
-      stocks 
-    });
+   res.render('sales', { 
+  role: req.user ? req.user.role : 'manager',  // ✅ demo fallback
+  stocks 
+});
   } catch (err) {
     console.error("Error loading sales page:", err);
     res.status(500).send("Unable to load sales page");
