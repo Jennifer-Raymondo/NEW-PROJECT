@@ -31,25 +31,11 @@ router.get('/demo', async (req, res) => {
   try {
     req.session.isDemo = true;
 
-    // ✅ Force session to save BEFORE rendering
-    req.session.save(async (err) => {
+    req.session.save((err) => {
       if (err) console.error('Session save error:', err);
-
-      const sales = await salesmodel.find();
-      const finishedItems = await stockModels.find();
-
-      const totalSales = sales.reduce((sum, s) => sum + (s.totalAmount || 0), 0);
-      const totalStockExpense = finishedItems.reduce((sum, s) => sum + (s.quantity * (s.costPrice || 0)), 0);
-      const totalProducts = finishedItems.reduce((sum, s) => sum + s.quantity, 0);
-      const totalSalesRecords = sales.length;
-
-      res.render('dashboard', {
-        totalSales,
-        totalStockExpense,
-        finishedProducts: { totalQuantity: totalProducts },
-        salesRecords: { totalCount: totalSalesRecords }
-      });
+      res.redirect('/dashboard'); // ✅ redirect AFTER session saves
     });
+
   } catch (err) {
     console.error("Demo error:", err);
     res.status(500).send("Failed to load demo");
