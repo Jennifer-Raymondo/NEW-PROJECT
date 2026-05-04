@@ -14,7 +14,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URL);
+mongoose.connect('mongodb+srv://mwf:shiraz2025@mwf-cluster.kqnzuip.mongodb.net/mwf?appName=mwf-cluster');
 mongoose.connection.on('open', () => console.log('MongoDB connected'))
                   .on('error', err => console.log(err));
 
@@ -32,7 +32,9 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: process.env.MONGODB_URL }),
+  store: MongoStore.create({ 
+  mongoUrl: 'mongodb+srv://mwf:shiraz2025@mwf-cluster.kqnzuip.mongodb.net/mwf?appName=mwf-cluster'
+}),
   cookie: { maxAge: 24*60*60*1000 }
 }));
 
