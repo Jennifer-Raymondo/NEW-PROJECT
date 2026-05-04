@@ -154,9 +154,6 @@ router.get('/saleslist', ensureAuthenticated, async (req, res) => {
   }
 });
 
-// ----------------------
-// SALES LIST (all transactions, attendants + managers)
-// ----------------------
 
 
 
