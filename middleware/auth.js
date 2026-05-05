@@ -1,17 +1,3 @@
-module.exports.ensureAuthenticated = (req, res, next) => {
-  if (req.isAuthenticated() || req.session.isDemo) return next();
-  res.redirect('/login');
-};
-
-module.exports.ensureManager = (req, res, next) => {
-  if (req.session.isDemo) return next(); // ✅ demo gets manager access
-  if (req.isAuthenticated() && req.user.role === 'manager') return next();
-  res.redirect('/login');
-};
-
-module.exports.ensureAttendant = (req, res, next) => {
-  if (req.session.isDemo) return next(); // ✅ demo gets attendant access too
-  if (req.isAuthenticated() && req.user.role === 'attendant') return next();
-  res.redirect('/login');
-};
-
+module.exports.ensureAuthenticated = (req, res, next) => next();
+module.exports.ensureManager = (req, res, next) => next();
+module.exports.ensureAttendant = (req, res, next) => next();

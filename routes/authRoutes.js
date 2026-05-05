@@ -27,19 +27,8 @@ router.get('/', (req, res) => {
 // ----------------------
 // DEMO ROUTE (no auth required)
 // ----------------------
-router.get('/demo', async (req, res) => {
-  try {
-    req.session.isDemo = true;
-
-    req.session.save((err) => {
-      if (err) console.error('Session save error:', err);
-      res.redirect('/dashboard'); // ✅ redirect AFTER session saves
-    });
-
-  } catch (err) {
-    console.error("Demo error:", err);
-    res.status(500).send("Failed to load demo");
-  }
+router.get('/demo', (req, res) => {
+  res.redirect('/dashboard');
 });
 
 
